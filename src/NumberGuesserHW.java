@@ -5,12 +5,13 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.Scanner;
 
-public class NumberGuesserPart4 {
+public class NumberGuesserHW {
 	private int level = 1;
 	private int strikes = 0;
 	private int maxStrikes = 5;
 	private int number = 0;
 	private boolean isRunning = false;
+	private String username = "";
 	final String saveFile = "numberGuesserSave.txt";
 
 	/***
@@ -45,12 +46,21 @@ public class NumberGuesserPart4 {
 		saveLevel();
 		number = getNumber(level);
 	}
-
+	
 	private void processCommands(String message) {
 		if (message.equalsIgnoreCase("quit")) {
 			System.out.println("Tired of playing? No problem, see you next time.");
 			isRunning = false;
+		}		
+		else if (message.equalsIgnoreCase("save")) {
+			System.out.println("Save your progress? No problem.");
+			saveLevel();
 		}
+		else if (message.equalsIgnoreCase("load")) {
+			System.out.println("Load progress? No problem.");
+			loadLevel();
+		}
+
 	}
 
 	private void processGuess(int guess) {
@@ -90,7 +100,11 @@ public class NumberGuesserPart4 {
 
 	private void saveLevel() {
 		try (FileWriter fw = new FileWriter(saveFile)) {
-			fw.write("" + level);// here we need to convert it to a String to record correctly
+			fw.write("lvl:" + level + "\n" +
+					"tries:" + strikes + "\n" +
+					"maxTries:" + maxStrikes + "\n" +
+					"n:" + number + "\n" +
+					"user:" + username + "\n");// here we need to convert it to a String to record correctly
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -104,10 +118,28 @@ public class NumberGuesserPart4 {
 		}
 		try (Scanner reader = new Scanner(file)) {
 			while (reader.hasNextLine()) {
-				int _level = reader.nextInt();
-				if (_level > 1) {
-					level = _level;
-					break;
+				String line = reader.nextLine();
+				String[] splitLine = line.split(":");
+				
+				if(splitLine[0] == "lvl")
+				{
+					level = Integer.parseInt(splitLine[1]);
+				}
+				else if(splitLine[0] == "tries")
+				{
+					strikes = Integer.parseInt(splitLine[1]);
+				}
+				else if(splitLine[0] == "maxTries")
+				{
+					maxStrikes = Integer.parseInt(splitLine[1]);
+				}
+				else if(splitLine[0] == "n")
+				{
+					number = Integer.parseInt(splitLine[1]);					
+				}
+				else if(splitLine[0] == "user")
+				{
+					username = splitLine[1];					
 				}
 			}
 		} catch (FileNotFoundException e) {
@@ -123,11 +155,13 @@ public class NumberGuesserPart4 {
 	void run() {
 		try (Scanner input = new Scanner(System.in);) {
 			System.out.println("Welcome to Number Guesser 4.0!");
+			while(username.length() == 0)
+			{
+				System.out.println("Please tell me your username");
+				username = input.nextLine();
+			}
 			System.out.println("I'll ask you to guess a number between a range, and you'll have " + maxStrikes
 					+ " attempts to guess.");
-			if (loadLevel()) {
-				System.out.println("Successfully loaded level " + level + " let's continue then");
-			}
 			number = getNumber(level);
 			isRunning = true;
 			while (input.hasNext()) {
@@ -147,7 +181,7 @@ public class NumberGuesserPart4 {
 	}
 
 	public static void main(String[] args) {
-		NumberGuesserPart4 guesser = new NumberGuesserPart4();
+		NumberGuesserHW guesser = new NumberGuesserHW();
 		guesser.run();
 	}
 }
