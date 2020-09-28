@@ -4,7 +4,6 @@ public class RecursionToLoop {
   
 	public static int sum(int num) {
 		if (num > 0) {
-			System.out.println("Sum current val: " + num);
 			return num + sum(num - 1);
 		}
 		return 0;
@@ -25,7 +24,7 @@ public class RecursionToLoop {
 		{
 			accum += (i-1);
 			
-			System.out.println("Current val: " + num);
+			System.out.println("Current val: " + accum);
 		}
 		
 	}
