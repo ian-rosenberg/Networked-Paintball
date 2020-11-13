@@ -234,7 +234,6 @@ public class GamePanel extends BaseGamePanel implements Event {
 	
 	am.put("space_pressed", new MoveAction(KeyEvent.VK_SPACE, true));
 	am.put("space_released", new MoveAction(KeyEvent.VK_SPACE, false));
-	
     }
 
     @Override
@@ -268,6 +267,12 @@ public class GamePanel extends BaseGamePanel implements Event {
 
 	@Override
 	public void onSyncWeaponFire(int team, Point position, Point direction) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onGetRoom(String roomname) {
 		// TODO Auto-generated method stub
 		
 	}

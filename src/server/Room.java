@@ -319,6 +319,10 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	}
     }
 
+    public List<String> getRooms() {
+	return server.getRooms();
+    }
+
     /***
      * Will attempt to migrate any remaining clients to the Lobby room. Will then
      * set references to null and should be eligible for garbage collection
@@ -387,7 +391,6 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		checkPositionSync(p);
 	    }
 	}
-	
 
     }
 
@@ -404,7 +407,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 
     @Override
     public void lateUpdate() {
-	    nextFrame();
+	nextFrame();
     }
 
     @Override

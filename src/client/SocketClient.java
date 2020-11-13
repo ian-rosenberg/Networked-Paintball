@@ -19,13 +19,13 @@ public enum SocketClient {
     INSTANCE; // see https://dzone.com/articles/java-singletons-using-enum "Making Singletons
 	      // with Enum"
 
-    private Socket server;
-    private Thread fromServerThread;
-    private Thread clientThread;
-    private String clientName;
-    private ObjectOutputStream out;
+    private static Socket server;
+    private static Thread fromServerThread;
+    private static Thread clientThread;
+    private static String clientName;
+    private static ObjectOutputStream out;
     private final static Logger log = Logger.getLogger(SocketClient.class.getName());
-    private List<Event> events = new ArrayList<Event>();// change from event to list<event>
+    private static List<Event> events = new ArrayList<Event>();// change from event to list<event>
 
     private Payload buildMessage(String message) {
 	Payload payload = new Payload();
@@ -151,6 +151,16 @@ public enum SocketClient {
 	}
     }
 
+    private void sendRoom(String roomName) {
+	Iterator<Event> iter = events.iterator();
+	while (iter.hasNext()) {
+	    Event e = iter.next();
+	    if (e != null) {
+		e.onGetRoom(roomName);
+	    }
+	}
+    }
+
     /***
      * Determine any special logic for different PayloadTypes
      * 
@@ -177,9 +187,10 @@ public enum SocketClient {
 	case SYNC_POSITION:
 	    sendSyncPosition(p.getClientName(), p.getPoint());
 	    break;
-	case PLAYER_FIRE:
-		//sendSyncFireWeapon(p.getClientName(), p.getPoint());
-		break;
+	case GET_ROOMS:
+	    // reply from ServerThread
+	    sendRoom(p.getMessage());
+	    break;
 	default:
 	    log.log(Level.WARNING, "unhandled payload on client" + p);
 	    break;
@@ -189,7 +200,7 @@ public enum SocketClient {
 
     // TODO Start public methods here
 
-	public void registerCallbackListener(Event e) {
+    public void registerCallbackListener(Event e) {
 	events.add(e);
 	log.log(Level.INFO, "Attached listener");
     }
@@ -229,6 +240,27 @@ public enum SocketClient {
 	sendPayload(buildMessage(message));
     }
 
+    public void sendCreateRoom(String room) {
+	Payload p = new Payload();
+	p.setPayloadType(PayloadType.CREATE_ROOM);
+	p.setMessage(room);
+	sendPayload(p);
+    }
+
+    public void sendJoinRoom(String room) {
+	Payload p = new Payload();
+	p.setPayloadType(PayloadType.JOIN_ROOM);
+	p.setMessage(room);
+	sendPayload(p);
+    }
+
+    public void sendGetRooms(String query) {
+	Payload p = new Payload();
+	p.setPayloadType(PayloadType.GET_ROOMS);
+	p.setMessage(query);
+	sendPayload(p);
+    }
+
     /**
      * Sends desired to change direction to server
      * 
@@ -239,21 +271,6 @@ public enum SocketClient {
 	// no need to add clientName here since ServerThread has the info
 	// so let's save a few bytes
 	p.setPayloadType(PayloadType.SYNC_DIRECTION);
-	p.setPoint(dir);
-	sendPayload(p);
-    }
-    
-    
-    /**
-     * Sends desired to change direction to server
-     * 
-     * @param dir
-     */
-    public void syncFireWeapon(Point dir) {
-	Payload p = new Payload();
-	// no need to add clientName here since ServerThread has the info
-	// so let's save a few bytes
-	p.setPayloadType(PayloadType.PLAYER_FIRE);
 	p.setPoint(dir);
 	sendPayload(p);
     }
@@ -288,7 +305,7 @@ public enum SocketClient {
 		// listen to console, server in, and write to server out
 		try (ObjectOutputStream out = new ObjectOutputStream(server.getOutputStream());
 			ObjectInputStream in = new ObjectInputStream(server.getInputStream());) {
-		    SocketClient.INSTANCE.out = out;
+		    SocketClient.out = out;
 
 		    // starts new thread
 		    listenForServerMessage(in);
