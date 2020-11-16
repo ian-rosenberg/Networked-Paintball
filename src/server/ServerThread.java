@@ -125,6 +125,16 @@ public class ServerThread extends Thread {
 	return sendPayload(payload);
     }
 
+    protected boolean sendAssignTeam(int n) {
+    	Payload p = new Payload();
+    	
+    	p.setPayloadType(PayloadType.ASSIGN_TEAM);
+    	p.setNumber(n);
+    	
+    	
+    	return sendPayload(p);
+    }
+    
     private boolean sendPayload(Payload p) {
 	try {
 	    out.writeObject(p);

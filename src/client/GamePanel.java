@@ -1,6 +1,7 @@
 package client;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -275,5 +276,10 @@ public class GamePanel extends BaseGamePanel implements Event {
 	public void onGetRoom(String roomname) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void onChangeTeam(int number) {
+		myPlayer.setTeam(number);
 	}
 }

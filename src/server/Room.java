@@ -22,7 +22,9 @@ public class Room extends BaseGamePanel implements AutoCloseable {
     private final static String CREATE_ROOM = "createroom";
     private final static String JOIN_ROOM = "joinroom";
     private List<ClientPlayer> clients = new ArrayList<ClientPlayer>();
-    static Dimension gameAreaSize = new Dimension(400, 600);
+    private List<ClientPlayer> team1 = new ArrayList<ClientPlayer>();
+    private List<ClientPlayer> team2 = new ArrayList<ClientPlayer>();
+    static Dimension gameAreaSize = new Dimension(1280, 720);
 
     public Room(String name, boolean delayStart) {
 	super(delayStart);
@@ -60,15 +62,18 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	while (iter.hasNext()) {
 	    ClientPlayer c = iter.next();
 	    if (c.client == client) {
-		exists = true;
-		if (c.player == null) {
-		    log.log(Level.WARNING, "Client " + client.getClientName() + " player was null, creating");
-		    Player p = new Player();
-		    p.setName(client.getClientName());
-		    c.player = p;
-		    syncClient(c);
-		}
-		break;
+	    	exists = true;
+			if (c.player == null) {
+			    log.log(Level.WARNING, "Client " + client.getClientName() + " player was null, creating");
+			    Player p = new Player();
+			    p.setName(client.getClientName());
+			    c.player = p;
+			    
+			    		
+			    
+			    syncClient(c);
+			}	    
+		    break;
 	    }
 	}
 
@@ -95,6 +100,16 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	if (cp.client.getClientName() != null) {
 	    cp.client.sendClearList();
 	    sendConnectionStatus(cp.client, true, "joined the room " + getName());
+	    
+	  //Assign team number
+	    if(team1.size() < team2.size()) {
+	    	team1.add(cp);
+	    	cp.client.sendAssignTeam(1);
+	    }else {
+	    	team2.add(cp);
+	    	cp.client.sendAssignTeam(2);
+	    }
+	    
 	    // calculate random start position
 	    Point startPos = Room.getRandomStartPosition();
 	    cp.player.setPosition(startPos);

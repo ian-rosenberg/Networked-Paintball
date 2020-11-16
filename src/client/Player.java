@@ -13,7 +13,7 @@ public class Player extends GameObject implements Serializable {
      * 
      */
     private static final long serialVersionUID = -6088251166673414031L;
-    Color color = Color.RED;
+    Color color = Color.WHITE;
     Point nameOffset = new Point(0, 5);
 
     /**
@@ -37,5 +37,21 @@ public class Player extends GameObject implements Serializable {
     public String toString() {
 	return String.format("Name: %s, p: (%d,%d), s: (%d, %d), d: (%d, %d), isAcitve: %s", name, position.x,
 		position.y, speed.x, speed.y, direction.x, direction.y, isActive);
+    }
+    
+    public void setTeam(int teamNumber) {
+    	//Only two teams. Splatoon colors, heh
+    	switch(teamNumber) {
+    		case 1: 
+    			color = Color.pink;
+    			break;
+    		case 2: 
+    			color = Color.green;
+    			break;
+    		default:
+    			break;
+    	}
+    	
+    	
     }
 }

@@ -203,9 +203,9 @@ public class ClientUI extends JFrame implements Event {
 
     void createDrawingPanel() {
 	game = new GamePanel();
-	game.setPreferredSize(new Dimension((int) (windowSize.width * .6), windowSize.height));
+	game.setPreferredSize(new Dimension((int) (windowSize.width * .8), windowSize.height));
 	textArea.getParent().getParent().getParent().add(game, BorderLayout.WEST);
-
+	
 	// TODO unsubscribe when done
 	SocketClient.INSTANCE.registerCallbackListener(game);
     }
@@ -216,14 +216,14 @@ public class ClientUI extends JFrame implements Event {
     }
 
     void addClient(String name) {
-	User u = new User(name);
-	Dimension p = new Dimension(userPanel.getSize().width, 30);
-	u.setPreferredSize(p);
-	u.setMinimumSize(p);
-	u.setMaximumSize(p);
-	userPanel.add(u);
-	users.add(u);
-	pack();
+		User u = new User(name);
+		Dimension p = new Dimension(userPanel.getSize().width, 30);
+		u.setPreferredSize(p);
+		u.setMinimumSize(p);
+		u.setMaximumSize(p);
+		userPanel.add(u);
+		users.add(u);
+		pack();
     }
 
     void removeClient(User client) {
@@ -400,5 +400,10 @@ public class ClientUI extends JFrame implements Event {
 	public void onSyncWeaponFire(int team, Point position, Point direction) {
 		// TODO Auto-generated method stub
 		// no need to sync this for ClientUI		
+	}
+
+	@Override
+	public void onChangeTeam(int number) {
+		repaint();
 	}
 }

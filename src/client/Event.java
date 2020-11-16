@@ -18,4 +18,6 @@ public interface Event {
     void onSyncWeaponFire(int team, Point position, Point direction);
     
     void onGetRoom(String roomname);
+
+	void onChangeTeam(int number);
 }

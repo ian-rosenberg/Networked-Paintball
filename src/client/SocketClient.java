@@ -160,6 +160,16 @@ public enum SocketClient {
 	    }
 	}
     }
+    
+    private void changeTeam(int number) {
+    	Iterator<Event> iter = events.iterator();
+    	while (iter.hasNext()) {
+    	    Event e = iter.next();
+    	    if (e != null) {
+    	    	e.onChangeTeam(number);
+    	    }
+    	}
+	}
 
     /***
      * Determine any special logic for different PayloadTypes
@@ -190,7 +200,9 @@ public enum SocketClient {
 	case GET_ROOMS:
 	    // reply from ServerThread
 	    sendRoom(p.getMessage());
-	    break;
+	    break;	
+	case ASSIGN_TEAM:
+		changeTeam(p.getNumber());
 	default:
 	    log.log(Level.WARNING, "unhandled payload on client" + p);
 	    break;
@@ -200,7 +212,7 @@ public enum SocketClient {
 
     // TODO Start public methods here
 
-    public void registerCallbackListener(Event e) {
+	public void registerCallbackListener(Event e) {
 	events.add(e);
 	log.log(Level.INFO, "Attached listener");
     }
@@ -209,6 +221,13 @@ public enum SocketClient {
 	events.remove(e);
     }
 
+    public void requestGameDimensions() {
+    	Payload p = new Payload();
+    	p.setPayloadType(PayloadType.SYNC_DIMENSIONS);
+    	
+    	sendPayload(p);
+    }
+    
     public boolean connectAndStart(String address, String port) throws IOException {
 	if (connect(address, port)) {
 	    return start();
