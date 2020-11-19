@@ -8,6 +8,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
@@ -108,6 +109,15 @@ public class GamePanel extends BaseGamePanel implements Event {
     @Override
     public void awake() {
 	players = new ArrayList<Player>();
+
+	GamePanel gp = this;
+	
+	addMouseListener(new MouseAdapter() {
+		@Override
+		public void mousePressed(MouseEvent e) {
+			gp.getRootPane().grabFocus();
+		}
+	});
     }
 
     @Override
