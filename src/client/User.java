@@ -3,20 +3,24 @@ package client;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Point;
+import java.util.Map;
 
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 public class User extends JPanel implements Event{
+	private int id = -1;
     private String name;
     private JEditorPane nameField;
-    private Color textColor;
+    private String textColor;
 
-    public User(String name) {
+    public User(String name, int ID) {
 	this.name = name;
+	id = ID;
 	nameField = new JEditorPane();
 	nameField.setText(name);
+	nameField.setContentType("text/html");
 	nameField.setEditable(false);
 	this.setLayout(new BorderLayout());
 	this.add(nameField);
@@ -27,12 +31,27 @@ public class User extends JPanel implements Event{
     }
     
     public void setColor(Color teamColor) {
-    	textColor = teamColor;
-    	nameField.setText("<span style=\\\"color:"+textColor+"\\\">"+name+"</span>");
+    	if(teamColor == Color.pink){
+    		textColor = "pink";
+    	}
+    	else {
+    		textColor = "green";
+    	}
+
+    	nameField.setText("<span style='color:"+textColor+"'>"+name+"</span>");
+    	repaint();
     }
 
+	public int getId() {
+		return id;
+	}
+	
+	public void setId(int ID) {
+		id = ID;
+	}
+
 	@Override
-	public void onClientConnect(String clientName, String message) {
+	public void onClientConnect(String clientName, String message, int id) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -91,6 +110,17 @@ public class User extends JPanel implements Event{
 			default:
 				break;
 		}
+		
+	}
+	
+	@Override
+	public void onSetId(int newId) {
+		id = newId;	
+	}
+
+	@Override
+	public void onSetPlayerInfo(int teamID, int playerID, Color color) {
+		// TODO Auto-generated method stub
 		
 	}
 }

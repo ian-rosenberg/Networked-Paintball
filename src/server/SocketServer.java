@@ -26,7 +26,7 @@ public class SocketServer {
 	    isRunning = true;
 	    // create a lobby on start
 	    Room.setServer(this);
-	    lobby = new Room(LOBBY);// , this);
+	    lobby = new Room(LOBBY, -1);// , this);
 	    rooms.add(lobby);
 	    while (SocketServer.isRunning) {
 		try {
@@ -38,7 +38,7 @@ public class SocketServer {
 		    // create a dummy room until we get further client details
 		    // technically once a user fully joins this lobby will be destroyed
 		    // but we'll track it in an array so we can attempt to clean it up just in case
-		    Room prelobby = new Room(PRELOBBY, true);// , this);
+		    Room prelobby = new Room(PRELOBBY, true, -1);// , this);
 		    prelobby.addClient(thread);
 		    isolatedPrelobbies.add(prelobby);
 
@@ -113,17 +113,28 @@ public class SocketServer {
 	return lobby;
     }
 
-    protected List<String> getRooms() {
-	// not the most efficient way to do it, but it works
-	List<String> roomNames = new ArrayList<String>();
-	Iterator<Room> iter = rooms.iterator();
-	while (iter.hasNext()) {
-	    Room r = iter.next();
-	    if (r != null && r.getName() != null) {
-		roomNames.add(r.getName());
-	    }
-	}
-	return roomNames;
+    protected List<String> getRooms(String room) {
+    	// not the most efficient way to do it, but it works
+    	List<String> roomNames = new ArrayList<String>();
+    	Iterator<Room> iter = rooms.iterator();
+    	// part 2, limit returned rooms
+    	int i = 0;
+    	int max = 10;// lets get up to 10 rooms
+    	while (iter.hasNext()) {
+    	    Room r = iter.next();
+    	    // Part 2 added room name filter for searches
+    	    if ((r != null && r.getName() != null)
+    		    && (room == null || (room != null && r.getName().toLowerCase().contains(room.toLowerCase())))) {
+    		roomNames.add(r.getName());
+    	    }
+
+    	    i++;
+    	    if (i > max) {
+    		break;
+    	    }
+
+    	}
+    	return roomNames;
     }
 
     /***
@@ -218,7 +229,7 @@ public class SocketServer {
 	    return false;
 	}
 	else {
-	    Room room = new Room(roomName);// , this);
+	    Room room = new Room(roomName, rooms.size());
 	    rooms.add(room);
 	    log.log(Level.INFO, "Created new room: " + roomName);
 	    return true;

@@ -1,5 +1,6 @@
 package client;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -7,12 +8,14 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import server.Payload;
+import server.Payload.PlayerInfo;
 import server.PayloadType;
 
 public enum SocketClient {
@@ -91,12 +94,12 @@ public enum SocketClient {
 	fromServerThread.start();// start the thread
     }
 
-    private void sendOnClientConnect(String name, String message) {
+    private void sendOnClientConnect(String name, String message, int id) {
 	Iterator<Event> iter = events.iterator();
 	while (iter.hasNext()) {
 	    Event e = iter.next();
 	    if (e != null) {
-		e.onClientConnect(name, message);
+		e.onClientConnect(name, message, id);
 	    }
 	}
     }
@@ -170,6 +173,27 @@ public enum SocketClient {
     	    }
     	}
 	}
+    
+    private void setPlayerId(int n) {
+    	Iterator<Event> iter = events.iterator();
+    	while (iter.hasNext()) {
+    	    Event e = iter.next();
+    	    if (e != null) {
+    	    	e.onSetId(n);
+    	    }
+    	}
+    }
+
+    
+	private void setPlayerInfo(PlayerInfo playerInfo) {
+		Iterator<Event> iter = events.iterator();
+    	while (iter.hasNext()) {
+    	    Event e = iter.next();
+    	    if (e != null) {
+    	    	e.onSetPlayerInfo(playerInfo.getTeamId(), playerInfo.getPlayerId(), playerInfo.getColor());
+    	    }
+    	}
+	}
 
     /***
      * Determine any special logic for different PayloadTypes
@@ -180,7 +204,7 @@ public enum SocketClient {
 
 	switch (p.getPayloadType()) {
 	case CONNECT:
-	    sendOnClientConnect(p.getClientName(), p.getMessage());
+	    sendOnClientConnect(p.getClientName(), p.getMessage(), p.getNumber());
 	    break;
 	case DISCONNECT:
 	    sendOnClientDisconnect(p.getClientName(), p.getMessage());
@@ -203,6 +227,13 @@ public enum SocketClient {
 	    break;	
 	case ASSIGN_TEAM:
 		changeTeam(p.getNumber());
+		break;
+	case ASSIGN_ID:
+		setPlayerId(p.getNumber());
+		break;
+	case SET_TEAM_INFO:
+		setPlayerInfo(p.getPlayerInfo());
+		break;
 	default:
 	    log.log(Level.WARNING, "unhandled payload on client" + p);
 	    break;

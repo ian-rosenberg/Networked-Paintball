@@ -2,6 +2,7 @@ package client;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
@@ -12,6 +13,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -32,6 +34,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
+
+import server.Payload.PlayerInfo;
 
 public class ClientUI extends JFrame implements Event {
     /**
@@ -215,8 +219,8 @@ public class ClientUI extends JFrame implements Event {
 	this.add(roomsPanel, "rooms");
     }
 
-    void addClient(String name) {
-		User u = new User(name);
+    void addClient(String name, int id) {
+		User u = new User(name, id);
 		Dimension p = new Dimension(userPanel.getSize().width, 30);
 		u.setPreferredSize(p);
 		u.setMinimumSize(p);
@@ -310,9 +314,9 @@ public class ClientUI extends JFrame implements Event {
     }
 
     @Override
-    public void onClientConnect(String clientName, String message) {
+    public void onClientConnect(String clientName, String message, int clientId) {
 	log.log(Level.INFO, String.format("%s: %s", clientName, message));
-	addClient(clientName);
+	addClient(clientName, clientId);
 	if (message != null && !message.isBlank()) {
 	    self.addMessage(String.format("%s: %s", clientName, message));
 	}
@@ -406,4 +410,20 @@ public class ClientUI extends JFrame implements Event {
 	public void onChangeTeam(int number) {
 		repaint();
 	}
+
+	@Override
+	public void onSetId(int id) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onSetPlayerInfo(int teamID, int playerID, Color color) {
+		for(User user: users) {
+			if(user.getId() == playerID) {
+				user.setColor(color);
+			}
+		}
+	}
+
 }

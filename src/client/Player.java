@@ -14,7 +14,17 @@ public class Player extends GameObject implements Serializable {
      */
     private static final long serialVersionUID = -6088251166673414031L;
     Color color = Color.WHITE;
-    Point nameOffset = new Point(0, 5);
+    Point nameOffset = new Point(0, -5);
+    boolean isReady = false;
+
+    public void setReady(boolean r) {
+    	isReady = r;
+    }
+
+    public boolean isReady() {
+    	return isReady;
+    }
+
 
     /**
      * Gets called by the game engine to draw the current location/size
@@ -35,7 +45,7 @@ public class Player extends GameObject implements Serializable {
 
     @Override
     public String toString() {
-	return String.format("Name: %s, p: (%d,%d), s: (%d, %d), d: (%d, %d), isAcitve: %s", name, position.x,
+	return String.format("Player ID: %d, Name: %s, p: (%d,%d), s: (%d, %d), d: (%d, %d), isAcitve: %s", id, name, position.x,
 		position.y, speed.x, speed.y, direction.x, direction.y, isActive);
     }
     
@@ -50,8 +60,24 @@ public class Player extends GameObject implements Serializable {
     			break;
     		default:
     			break;
-    	}
+    	}  	
     	
-    	
+    	team = teamNumber;
+    }
+    
+    public int getId() {
+    	return id;
+    }
+    
+    public void setId(int playerId) {
+    	id = playerId;
+    }
+
+	public Color getColor() {
+		return color;
+	}
+	
+    public void setColor(Color teamColor) {
+    	color = teamColor;
     }
 }

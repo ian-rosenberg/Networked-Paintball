@@ -11,6 +11,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -41,7 +42,7 @@ public class GamePanel extends BaseGamePanel implements Event {
     }
 
     @Override
-    public synchronized void onClientConnect(String clientName, String message) {
+    public synchronized void onClientConnect(String clientName, String message, int id) {
 	// TODO Auto-generated method stub
 	System.out.println("Connected on Game Panel: " + clientName);
 	boolean exists = false;
@@ -56,6 +57,7 @@ public class GamePanel extends BaseGamePanel implements Event {
 	if (!exists) {
 	    Player p = new Player();
 	    p.setName(clientName);
+	    p.setId(id);
 	    players.add(p);
 	    // want .equals here instead of ==
 	    // https://www.geeksforgeeks.org/difference-equals-method-java/
@@ -281,5 +283,25 @@ public class GamePanel extends BaseGamePanel implements Event {
 	@Override
 	public void onChangeTeam(int number) {
 		myPlayer.setTeam(number);
+	}
+
+	@Override
+	public void onSetId(int id) {
+		myPlayer.setId(id);
+	}
+
+	@Override
+	public void onSetPlayerInfo(int teamID, int playerID, Color color) {
+		for(Player player: players) {
+			if(player.getId() == playerID){
+				continue;
+			}
+
+			player.setColor(color);
+			player.setTeam(teamID);
+			player.setId(playerID);
+		}		
+		
+		repaint();
 	}
 }

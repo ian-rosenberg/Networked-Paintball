@@ -1,9 +1,65 @@
 package server;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import client.Event;
+import client.Player;
 
 public class Payload implements Serializable {
+	
+	public class PlayerInfo implements Serializable{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -485567639439554589L;
+		private int teamId = 0;
+		private int playerId;
+		private Color teamColor = Color.white;
+			
+		public void setTeamId(int id) {
+			teamId = id;
+		}
+		
+		public void setPlayerId(int id) {
+			playerId = id;
+		}
+		
+		public void setColor(Color color) {
+			teamColor = color;
+		}
+		
+		public int getTeamId() {
+			return teamId;
+		}
+		
+		public int getPlayerId() {
+			return playerId;
+		}
+		
+		public Color getColor() {
+			return teamColor;
+		}
+	}
+	
+	private PlayerInfo playerInfo = null;
+	
+	public PlayerInfo getPlayerInfo() {
+		return playerInfo;
+	}
+	
+	public void setPlayerInfo(int teamID, int playerID, Color color) {
+		if(playerInfo == null) {
+			playerInfo = new PlayerInfo();
+		}
+		
+		playerInfo.teamId = teamID;
+		playerInfo.playerId = playerID;
+		playerInfo.teamColor = color;
+	}
 
     /**
      * baeldung.com/java-serial-version-uid
@@ -61,7 +117,7 @@ public class Payload implements Serializable {
     public Point getPoint() {
 	return new Point(x, y);
     }
-
+    
     @Override
     public String toString() {
 	return String.format("Type[%s], Number[%s], Message[%s]", getPayloadType().toString(), getNumber(),

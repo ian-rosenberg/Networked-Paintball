@@ -1,9 +1,10 @@
 package client;
 
+import java.awt.Color;
 import java.awt.Point;
 
 public interface Event {
-    void onClientConnect(String clientName, String message);
+    void onClientConnect(String clientName, String message, int clientId);
 
     void onClientDisconnect(String clientName, String message);
 
@@ -20,4 +21,8 @@ public interface Event {
     void onGetRoom(String roomname);
 
 	void onChangeTeam(int number);
+	
+	void onSetId(int id);
+	
+	void onSetPlayerInfo(int teamID, int playerID, Color color);
 }
