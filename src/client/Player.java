@@ -45,7 +45,7 @@ public class Player extends GameObject implements Serializable {
 
     @Override
     public String toString() {
-	return String.format("Player ID: %d, Name: %s, p: (%d,%d), s: (%d, %d), d: (%d, %d), isAcitve: %s", id, name, position.x,
+	return String.format("Player ID: %d, Name: %s, p: (%d,%d), s: (%d, %d), d: (%d, %d), isActive: %s", id, name, position.x,
 		position.y, speed.x, speed.y, direction.x, direction.y, isActive);
     }
     
@@ -63,14 +63,6 @@ public class Player extends GameObject implements Serializable {
     	}  	
     	
     	team = teamNumber;
-    }
-    
-    public int getId() {
-    	return id;
-    }
-    
-    public void setId(int playerId) {
-    	id = playerId;
     }
 
 	public Color getColor() {

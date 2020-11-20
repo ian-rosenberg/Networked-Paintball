@@ -34,6 +34,7 @@ public abstract class GameObject implements Serializable {
     		return;
     	}
     	
+    	System.out.println("Assigned player "+ id +" to team "+ team);
     	team = teamNumber;
     }
     
@@ -85,6 +86,17 @@ public abstract class GameObject implements Serializable {
 	this.isActive = isActive;
     }
 
+    public void setId(int ID) {
+    	if(ID < 0) {
+    		System.out.println("Invalid id!");
+    		return;
+    	}
+    	
+    	id = ID;
+
+    	System.out.println("Assigned player "+ id);
+    }
+    
     public boolean isActive() {
 	return this.isActive;
     }
@@ -131,6 +143,10 @@ public abstract class GameObject implements Serializable {
 
     public int getTeam() {
     	return team;
+    }
+    
+    public int getId() {
+    	return id;
     }
 
     

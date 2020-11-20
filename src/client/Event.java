@@ -1,6 +1,5 @@
 package client;
 
-import java.awt.Color;
 import java.awt.Point;
 
 public interface Event {
@@ -24,5 +23,5 @@ public interface Event {
 	
 	void onSetId(int id);
 	
-	void onSetPlayerInfo(int teamID, int playerID, Color color);
+	void onSetPlayerColor(int teamId, int playerId);
 }

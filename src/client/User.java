@@ -29,18 +29,6 @@ public class User extends JPanel implements Event{
     public String getName() {
 	return name;
     }
-    
-    public void setColor(Color teamColor) {
-    	if(teamColor == Color.pink){
-    		textColor = "pink";
-    	}
-    	else {
-    		textColor = "green";
-    	}
-
-    	nameField.setText("<span style='color:"+textColor+"'>"+name+"</span>");
-    	repaint();
-    }
 
 	public int getId() {
 		return id;
@@ -97,21 +85,6 @@ public class User extends JPanel implements Event{
 		// TODO Auto-generated method stub
 		
 	}
-
-	@Override
-	public void onChangeTeam(int number) {
-		switch(number) {
-			case 1: 
-				setColor(Color.pink);
-				break;
-			case 2: 
-				setColor(Color.green);
-				break;
-			default:
-				break;
-		}
-		
-	}
 	
 	@Override
 	public void onSetId(int newId) {
@@ -119,7 +92,20 @@ public class User extends JPanel implements Event{
 	}
 
 	@Override
-	public void onSetPlayerInfo(int teamID, int playerID, Color color) {
+	public void onSetPlayerColor(int teamId, int playerId) {
+		if(teamId == 1){
+    		textColor = "pink";
+    	}
+    	else {
+    		textColor = "green";
+    	}
+
+    	nameField.setText("<span style='color:"+textColor+"'>"+name+"</span>");
+    	repaint();
+	}
+
+	@Override
+	public void onChangeTeam(int number) {
 		// TODO Auto-generated method stub
 		
 	}

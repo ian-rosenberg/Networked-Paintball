@@ -107,23 +107,13 @@ public class ServerThread extends Thread {
     }
     
     
-    protected boolean sendTeamInfo(List<ClientPlayer> clients, int currentPlayerId) {
-    	boolean sendAllFlag = false;
+    protected boolean sendTeamInfo(int teamId, int currentPlayerId) {	
+    	Payload payload = new Payload();
+    	payload.setPayloadType(PayloadType.SET_TEAM_INFO);
+    	payload.setPlayerInfo(teamId, currentPlayerId);
+   
     	
-    	for(ClientPlayer clientPlayer: clients) {
-    		Color color = Color.pink;
-    		if(clientPlayer.player.getTeam() == 2) { 
-    			color = Color.green;
-    		}
-    		
-	    	Payload payload = new Payload();
-	    	payload.setPayloadType(PayloadType.SET_TEAM_INFO);
-	    	payload.setPlayerInfo(clientPlayer.player.getTeam(), currentPlayerId, color);
-	   
-	    	
-	    	sendAllFlag = sendPayload(payload);
-    	}
-    	return sendAllFlag;
+    	return sendPayload(payload);
     }
 
     protected boolean sendConnectionStatus(String clientName, boolean isConnect, String message, int userId) {
@@ -153,16 +143,6 @@ public class ServerThread extends Thread {
 	payload.setPayloadType(PayloadType.GET_ROOMS);
 	payload.setMessage(room);
 	return sendPayload(payload);
-    }
-
-    protected boolean sendAssignTeam(int n) {
-    	Payload p = new Payload();
-    	
-    	p.setPayloadType(PayloadType.ASSIGN_TEAM);
-    	p.setNumber(n);
-    	
-    	
-    	return sendPayload(p);
     }
     
     private boolean sendPayload(Payload p) {

@@ -1,6 +1,5 @@
 package server;
 
-import java.awt.Color;
 import java.awt.Point;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -18,7 +17,6 @@ public class Payload implements Serializable {
 		private static final long serialVersionUID = -485567639439554589L;
 		private int teamId = 0;
 		private int playerId;
-		private Color teamColor = Color.white;
 			
 		public void setTeamId(int id) {
 			teamId = id;
@@ -28,9 +26,6 @@ public class Payload implements Serializable {
 			playerId = id;
 		}
 		
-		public void setColor(Color color) {
-			teamColor = color;
-		}
 		
 		public int getTeamId() {
 			return teamId;
@@ -39,26 +34,17 @@ public class Payload implements Serializable {
 		public int getPlayerId() {
 			return playerId;
 		}
-		
-		public Color getColor() {
-			return teamColor;
-		}
 	}
 	
-	private PlayerInfo playerInfo = null;
+	private PlayerInfo playerInfo = new PlayerInfo();
 	
 	public PlayerInfo getPlayerInfo() {
 		return playerInfo;
 	}
 	
-	public void setPlayerInfo(int teamID, int playerID, Color color) {
-		if(playerInfo == null) {
-			playerInfo = new PlayerInfo();
-		}
-		
+	public void setPlayerInfo(int teamID, int playerID) {
 		playerInfo.teamId = teamID;
 		playerInfo.playerId = playerID;
-		playerInfo.teamColor = color;
 	}
 
     /**

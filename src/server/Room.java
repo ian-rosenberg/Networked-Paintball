@@ -18,14 +18,15 @@ public class Room extends BaseGamePanel implements AutoCloseable {
     private int roomId = -1;
     private final static Logger log = Logger.getLogger(Room.class.getName());
 
+    private final static int TEAM_A = 1;
+    private final static int TEAM_B = 2;
+    
     // Commands
     private final static String COMMAND_TRIGGER = "/";
     private final static String CREATE_ROOM = "createroom";
     private final static String JOIN_ROOM = "joinroom";
     private final static String READY = "ready";
     private List<ClientPlayer> clients = new ArrayList<ClientPlayer>();
-    private List<ClientPlayer> team1 = new ArrayList<ClientPlayer>();
-    private List<ClientPlayer> team2 = new ArrayList<ClientPlayer>();
     static Dimension gameAreaSize = new Dimension(1280, 720);
 
     public Room(String name, boolean delayStart, int id) {
@@ -52,6 +53,16 @@ public class Room extends BaseGamePanel implements AutoCloseable {
     
     public int getRoomId() {
     	return roomId;
+    }
+    
+    private void teamAssign(ClientPlayer clientPlayer) {
+    	int playerId = clientPlayer.player.getId();
+    	
+    	if(playerId % 2 == 0) {
+    		clientPlayer.client.sendTeamInfo(TEAM_A, playerId);
+    	}else {
+    		clientPlayer.client.sendTeamInfo(TEAM_B, playerId);
+    	}
     }
     
     private ClientPlayer getClientPlayer(ServerThread client) {
@@ -96,36 +107,12 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			    
 			    
 			    c.player = p;
-			    c.player.setId(clients.size());
-			    client.sendId(c.player.getId());
-			    
-			    //Assign team number
-			    if(team1.size() < team2.size() && team1.indexOf(c)  < 0 && team2.indexOf(c) < 0) {
-			    	team1.add(c);
-			    	
-			    	c.client.sendAssignTeam(1);
-			    }else if(team1.indexOf(c)  < 0 && team2.indexOf(c) < 0){
-			    	team2.add(c);
-			    	
-			    	c.client.sendAssignTeam(2);
-			    }
+			    c.client.sendTeamInfo(c.player.getTeam(), c.player.getId());
 			    			    		
 			    
 			    syncClient(c);
 			}	    
 		    break;
-	    }
-	    else {
-	    	//Assign team number
-	    	if(team1.size() < team2.size() && team1.indexOf(c)  < 0 && team2.indexOf(c) < 0) {
-		    	team1.add(c);
-		    	
-		    	c.client.sendAssignTeam(1);
-		    }else if(team1.indexOf(c)  < 0 && team2.indexOf(c) < 0){
-		    	team2.add(c);
-		    	
-		    	c.client.sendAssignTeam(2);
-		    }
 	    }
 	}
 
@@ -141,15 +128,21 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	    ClientPlayer cp = new ClientPlayer(client, p);
 	    clients.add(cp);// this is a "merged" list of Clients (ServerThread) and Players (Player)
 			    // objects
+	    
 	    // that's so we don't have to keep track of the same client in two different
 	    // list locations
-	    cp.player.setId(clients.size());
 	    syncClient(cp);
 
 	}
     }
 
-    private void syncClient(ClientPlayer cp) {
+    private void setPlayerInfo(ClientPlayer c) {
+	    c.player.setId(clients.size());
+	    c.client.sendId(c.player.getId());
+	    teamAssign(c);	
+	}
+
+	private void syncClient(ClientPlayer cp) {
 	if (cp.client.getClientName() != null) {
 	    cp.client.sendClearList();
 	    sendConnectionStatus(cp.client, true, "joined the room " + getName(), cp.player.getId());
@@ -165,6 +158,8 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	    updateClientList(cp.client);
 	    // get dir/pos of existing players
 	    updatePlayers(cp.client);
+	    
+	    cp.client.sendTeamInfo(cp.player.getTeam(), cp.player.getId());
 	}
     }
 
@@ -183,12 +178,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	    		boolean messageSent = client.sendDirection(c.client.getClientName(), c.player.getDirection());
 				if (messageSent) {
 		    		if(client.sendPosition(c.client.getClientName(), c.player.getPosition())) {
-		    			int team = 1;
-		    			if(team2.indexOf(c) > -1)
-		    				team = 2;
-		    				
-		    			log.log(Level.SEVERE, "Sending client update to "+c.player.getName()+" with ID "+c.player.getId()+", and team "+team);
-		    			messageSent = client.sendTeamInfo(clients, c.player.getId());
+		    			client.sendTeamInfo(c.player.getTeam(), c.player.getId());
 		    		}
 	    		}
 	    	}

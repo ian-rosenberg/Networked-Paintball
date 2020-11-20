@@ -12,7 +12,6 @@ public enum PayloadType {
     JOIN_ROOM, 
     GET_ROOMS,
     SYNC_DIMENSIONS,
-    ASSIGN_TEAM,
     ASSIGN_ID,
     SET_TEAM_INFO,
     READY

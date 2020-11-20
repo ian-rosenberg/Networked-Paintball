@@ -57,7 +57,6 @@ public class GamePanel extends BaseGamePanel implements Event {
 	if (!exists) {
 	    Player p = new Player();
 	    p.setName(clientName);
-	    p.setId(id);
 	    players.add(p);
 	    // want .equals here instead of ==
 	    // https://www.geeksforgeeks.org/difference-equals-method-java/
@@ -291,16 +290,17 @@ public class GamePanel extends BaseGamePanel implements Event {
 	}
 
 	@Override
-	public void onSetPlayerInfo(int teamID, int playerID, Color color) {
+	public void onSetPlayerColor(int teamId, int playerId) {
 		for(Player player: players) {
-			if(player.getId() == playerID){
-				continue;
+			if(player.getId() == playerId) {
+				if(teamId == 1) {
+					player.setColor(Color.pink);			
+				}
+				else {
+					player.setColor(Color.green);
+				}
 			}
-
-			player.setColor(color);
-			player.setTeam(teamID);
-			player.setId(playerID);
-		}		
+		}
 		
 		repaint();
 	}
