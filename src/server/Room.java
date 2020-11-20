@@ -105,7 +105,6 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			    Player p = new Player();
 			    p.setName(client.getClientName());
 			    
-			    
 			    c.player = p;
 			    c.client.sendTeamInfo(c.player.getTeam(), c.player.getId());
 			    			    		
@@ -124,6 +123,8 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	    // so server can determine position
 	    Player p = new Player();
 	    p.setName(client.getClientName());
+	    p.setId(clients.size());
+	    
 	    // add Player and Client reference to ClientPlayer object reference
 	    ClientPlayer cp = new ClientPlayer(client, p);
 	    clients.add(cp);// this is a "merged" list of Clients (ServerThread) and Players (Player)
@@ -132,13 +133,13 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	    // that's so we don't have to keep track of the same client in two different
 	    // list locations
 	    syncClient(cp);
-
+	    
 	}
     }
 
     private void setPlayerInfo(ClientPlayer c) {
 	    c.player.setId(clients.size());
-	    c.client.sendId(c.player.getId());
+	    c.client.sendId(clients.size());
 	    teamAssign(c);	
 	}
 
@@ -147,6 +148,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	    cp.client.sendClearList();
 	    sendConnectionStatus(cp.client, true, "joined the room " + getName(), cp.player.getId());
 	    
+	    setPlayerInfo(cp);
 	    // calculate random start position
 	    Point startPos = Room.getRandomStartPosition();
 	    cp.player.setPosition(startPos);
@@ -158,8 +160,6 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	    updateClientList(cp.client);
 	    // get dir/pos of existing players
 	    updatePlayers(cp.client);
-	    
-	    cp.client.sendTeamInfo(cp.player.getTeam(), cp.player.getId());
 	}
     }
 
@@ -184,7 +184,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	    	}
 		}
     }
-
+        
     /**
      * Syncs the existing clients in the room with our newly connected client
      * 
