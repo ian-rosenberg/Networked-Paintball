@@ -59,8 +59,11 @@ public class Room extends BaseGamePanel implements AutoCloseable {
     	int playerId = clientPlayer.player.getId();
     	
     	if(playerId % 2 == 0) {
+    		clientPlayer.player.setTeam(TEAM_A);
     		clientPlayer.client.sendTeamInfo(TEAM_A, playerId);
     	}else {
+    		
+    		clientPlayer.player.setTeam(TEAM_B);
     		clientPlayer.client.sendTeamInfo(TEAM_B, playerId);
     	}
     }
@@ -106,7 +109,6 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			    p.setName(client.getClientName());
 			    
 			    c.player = p;
-			    c.client.sendTeamInfo(c.player.getTeam(), c.player.getId());
 			    			    		
 			    
 			    syncClient(c);
@@ -124,6 +126,8 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	    Player p = new Player();
 	    p.setName(client.getClientName());
 	    p.setId(clients.size());
+	    
+	    client.sendTeamInfo(p.getId()%2, p.getId());
 	    
 	    // add Player and Client reference to ClientPlayer object reference
 	    ClientPlayer cp = new ClientPlayer(client, p);
@@ -149,6 +153,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	    sendConnectionStatus(cp.client, true, "joined the room " + getName(), cp.player.getId());
 	    
 	    setPlayerInfo(cp);
+	    
 	    // calculate random start position
 	    Point startPos = Room.getRandomStartPosition();
 	    cp.player.setPosition(startPos);
@@ -184,7 +189,18 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	    	}
 		}
     }
-        
+     
+    
+    private void syncTeams() {
+		Iterator<ClientPlayer> clientIter = clients.iterator();
+		while (clientIter.hasNext()) {
+		    ClientPlayer cp = clientIter.next();
+		    if (cp != null) {
+		    	cp.client.sendTeamInfo(cp.player.getTeam(), cp.player.getId());  
+		    }
+		}
+    }
+    
     /**
      * Syncs the existing clients in the room with our newly connected client
      * 
@@ -196,6 +212,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	    ClientPlayer c = iter.next();
 	    if (c.client != client) {
 			boolean messageSent = client.sendConnectionStatus(c.client.getClientName(), true, null, c.player.getId());
+		    syncTeams();
 	    }
 	}
     }

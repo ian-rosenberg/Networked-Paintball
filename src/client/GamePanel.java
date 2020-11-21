@@ -292,13 +292,11 @@ public class GamePanel extends BaseGamePanel implements Event {
 	@Override
 	public void onSetPlayerColor(int teamId, int playerId) {
 		for(Player player: players) {
-			if(player.getId() == playerId) {
-				if(teamId == 1) {
-					player.setColor(Color.pink);			
-				}
-				else {
-					player.setColor(Color.green);
-				}
+			if(player.getId() % 2 == 0) {
+				player.setColor(Color.pink);			
+			}
+			else {
+				player.setColor(Color.green);
 			}
 		}
 		
