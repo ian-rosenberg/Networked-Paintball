@@ -185,12 +185,12 @@ public enum SocketClient {
     }
 
     
-	private void setPlayerColor(PlayerInfo playerInfo) {
+	private void setPlayerColor(int teamId, String clientName) {
 		Iterator<Event> iter = events.iterator();
     	while (iter.hasNext()) {
     	    Event e = iter.next();
     	    if (e != null) {
-    	    	e.onSetPlayerColor(playerInfo.getTeamId(), playerInfo.getPlayerId());
+    	    	e.onSetPlayerColor(teamId, clientName);
     	    }
     	}
 	}
@@ -229,7 +229,7 @@ public enum SocketClient {
 		setPlayerId(p.getNumber());
 		break;
 	case SET_TEAM_INFO:
-		setPlayerColor(p.getPlayerInfo());
+		setPlayerColor(p.getNumber(), p.getClientName());
 		break;
 	default:
 	    log.log(Level.WARNING, "unhandled payload on client" + p);

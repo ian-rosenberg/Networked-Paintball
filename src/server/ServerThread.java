@@ -107,10 +107,11 @@ public class ServerThread extends Thread {
     }
     
     
-    protected boolean sendTeamInfo(int teamId, int currentPlayerId) {	
+    protected boolean sendTeamInfo(int teamId, String clientName) {	
     	Payload payload = new Payload();
     	payload.setPayloadType(PayloadType.SET_TEAM_INFO);
-    	payload.setPlayerInfo(teamId, currentPlayerId);
+    	payload.setNumber(teamId);
+    	payload.setClientName(clientName);
    
     	
     	return sendPayload(payload);

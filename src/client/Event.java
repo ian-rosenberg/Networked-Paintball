@@ -23,5 +23,5 @@ public interface Event {
 	
 	void onSetId(int id);
 	
-	void onSetPlayerColor(int teamId, int playerId);
+	void onSetPlayerColor(int teamId, String clientName);
 }

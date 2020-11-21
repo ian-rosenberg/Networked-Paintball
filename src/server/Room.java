@@ -57,14 +57,15 @@ public class Room extends BaseGamePanel implements AutoCloseable {
     
     private void teamAssign(ClientPlayer clientPlayer) {
     	int playerId = clientPlayer.player.getId();
+    	String name = clientPlayer.player.getName();
     	
     	if(playerId % 2 == 0) {
     		clientPlayer.player.setTeam(TEAM_A);
-    		clientPlayer.client.sendTeamInfo(TEAM_A, playerId);
+    		clientPlayer.client.sendTeamInfo(TEAM_A, name);
     	}else {
     		
     		clientPlayer.player.setTeam(TEAM_B);
-    		clientPlayer.client.sendTeamInfo(TEAM_B, playerId);
+    		clientPlayer.client.sendTeamInfo(TEAM_B, name);
     	}
     }
     
@@ -127,7 +128,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	    p.setName(client.getClientName());
 	    p.setId(clients.size());
 	    
-	    client.sendTeamInfo(p.getId()%2, p.getId());
+	    client.sendTeamInfo(p.getId()%2, p.getName());
 	    
 	    // add Player and Client reference to ClientPlayer object reference
 	    ClientPlayer cp = new ClientPlayer(client, p);
@@ -153,6 +154,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	    sendConnectionStatus(cp.client, true, "joined the room " + getName(), cp.player.getId());
 	    
 	    setPlayerInfo(cp);
+	    cp.client.sendTeamInfo(cp.player.getId() % 2, cp.client.getClientName());
 	    
 	    // calculate random start position
 	    Point startPos = Room.getRandomStartPosition();
@@ -165,6 +167,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	    updateClientList(cp.client);
 	    // get dir/pos of existing players
 	    updatePlayers(cp.client);
+	    syncTeams();
 	}
     }
 
@@ -183,7 +186,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	    		boolean messageSent = client.sendDirection(c.client.getClientName(), c.player.getDirection());
 				if (messageSent) {
 		    		if(client.sendPosition(c.client.getClientName(), c.player.getPosition())) {
-		    			client.sendTeamInfo(c.player.getTeam(), c.player.getId());
+		    			client.sendTeamInfo(c.player.getId(), c.client.getClientName());
 		    		}
 	    		}
 	    	}
@@ -195,9 +198,13 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		Iterator<ClientPlayer> clientIter = clients.iterator();
 		while (clientIter.hasNext()) {
 		    ClientPlayer cp = clientIter.next();
-		    if (cp != null) {
-		    	cp.client.sendTeamInfo(cp.player.getTeam(), cp.player.getId());  
-		    }
+		    Iterator<ClientPlayer> innerIter = clients.iterator();
+			while (innerIter.hasNext()) {
+				ClientPlayer iCp = innerIter.next();
+			    if (cp != iCp) {
+			    	iCp.client.sendTeamInfo(iCp.player.getTeam(), iCp.player.getName());  
+			    }
+			}
 		}
     }
     
@@ -212,7 +219,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	    ClientPlayer c = iter.next();
 	    if (c.client != client) {
 			boolean messageSent = client.sendConnectionStatus(c.client.getClientName(), true, null, c.player.getId());
-		    syncTeams();
+			client.sendTeamInfo(c.player.getId()%2, c.client.getClientName());
 	    }
 	}
     }

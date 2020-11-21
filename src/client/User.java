@@ -92,7 +92,7 @@ public class User extends JPanel implements Event{
 	}
 
 	@Override
-	public void onSetPlayerColor(int teamId, int playerId) {
+	public void onSetPlayerColor(int teamId, String playerName) {
 		if(teamId == 1){
     		textColor = "pink";
     	}
@@ -100,6 +100,8 @@ public class User extends JPanel implements Event{
     		textColor = "green";
     	}
 
+		name = playerName;
+		
     	nameField.setText("<span style='color:"+textColor+"'>"+name+"</span>");
     	repaint();
 	}

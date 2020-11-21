@@ -418,7 +418,7 @@ public class ClientUI extends JFrame implements Event {
 	}
 
 	@Override
-	public void onSetPlayerColor(int teamId, int playerId) {
+	public void onSetPlayerColor(int teamId, String playerName) {
 		repaint();
 	}
 
