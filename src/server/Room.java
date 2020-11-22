@@ -199,7 +199,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		while (clientIter.hasNext()) {
 		    ClientPlayer cp = clientIter.next();
 		    if (cp != current) {
-		    	cp.client.sendTeamInfo(cp.player.getTeam(), cp.client.getClientName());  
+		    	current.client.sendTeamInfo(cp.player.getTeam(), cp.client.getClientName());  
 		    }
 		}
     }
