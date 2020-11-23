@@ -24,4 +24,6 @@ public interface Event {
 	void onSetId(int id);
 	
 	void onSetPlayerColor(int teamId, String clientName);
+	
+	void onGameStart(Point startPos,  int playerId);
 }

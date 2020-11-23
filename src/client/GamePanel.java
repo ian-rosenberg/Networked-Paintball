@@ -8,6 +8,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
@@ -108,7 +109,16 @@ public class GamePanel extends BaseGamePanel implements Event {
 
     @Override
     public void awake() {
-	players = new ArrayList<Player>();
+		players = new ArrayList<Player>();
+		GamePanel gp = this;
+		// fix the loss of focus when typing in chat
+		addMouseListener(new MouseAdapter() {
+	
+		    @Override
+		    public void mousePressed(MouseEvent e) {
+			gp.getRootPane().grabFocus();
+		    }
+		});
     }
 
     @Override
@@ -205,7 +215,12 @@ public class GamePanel extends BaseGamePanel implements Event {
 	if(state == GameState.GAME) {
 		g.setColor(Color.WHITE);
 		g.setFont(new Font("Monospaced", Font.BOLD, 24));
-		g.drawString("Time Left: "+(timeLeft/Room.GetNanoSeconds()/60)+"min", Room.getDimensions().width / 2, 50);
+		g.drawString("Time Left: "+(timeLeft/Room.GetNanoSeconds()/60)+"min left!", Room.getDimensions().width / 2, 50);
+	}
+	else {
+		g.setColor(Color.WHITE);
+		g.setFont(new Font("Monospaced", Font.BOLD, 24));
+		g.drawString("Game has not started yet!", Room.getDimensions().width / 2, 50);
 	}
     }
 
@@ -310,6 +325,19 @@ public class GamePanel extends BaseGamePanel implements Event {
 				else {
 					player.setColor(Color.green);
 				}
+				break;
+			}
+		}
+		
+		repaint();
+	}
+
+	@Override
+	public void onGameStart(Point startPos, int playerId) {
+		for(Player player: players) {
+			if(player.getId() == playerId) {
+				player.setPosition(startPos);
+				
 				break;
 			}
 		}

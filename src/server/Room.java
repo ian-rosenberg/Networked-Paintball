@@ -269,6 +269,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 
     protected void joinLobby(ServerThread client) {
 	server.joinLobby(client);
+	state = GameState.LOBBY;
     }
     
     
@@ -311,8 +312,8 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		    wasCommand = true;
 		    break;
 		case READY:
-			if(name.equals("Lobby") || name.equals("PreLobby") ) {
-				response = "/ready is not valid for Lobby! Join a new room!";
+			if(name.equals("Lobby") ) {
+				response = "ready is not valid for Lobby! Join a new room!";
 				break;
 			}
 			
@@ -366,7 +367,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
     	    prevNS = currentNS;
     	    log.log(Level.INFO, "Game has begun in room "+name);
     	}
-        }
+    }
 
     /***
      * Takes a sender and a message and broadcasts the message to all clients in
@@ -512,14 +513,13 @@ public class Room extends BaseGamePanel implements AutoCloseable {
     @Override
     public void update() {
     	if(state != GameState.GAME)
-    		return;
+    		timeLeft = Long.MAX_VALUE;
     	
     	prevNS = currentNS;
     	currentNS = System.nanoTime();
     	timeLeft -= (currentNS - prevNS);
     	if(timeLeft <= 0) {
     		state = GameState.END;
-    		drawWinTeamText();
     		return;
     	}
     	
@@ -537,11 +537,6 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		    }
 		}
     }
-
-    private void drawWinTeamText() {
-		// TODO Auto-generated method stub
-		
-	}
 
 	// don't call this more than once per frame
     private void nextFrame() {
