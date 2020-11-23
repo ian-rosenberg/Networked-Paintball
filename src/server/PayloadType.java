@@ -14,5 +14,5 @@ public enum PayloadType {
     SYNC_DIMENSIONS,
     ASSIGN_ID,
     SET_TEAM_INFO,
-    READY
+    READY,
 }

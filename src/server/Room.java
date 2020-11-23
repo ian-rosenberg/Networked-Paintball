@@ -16,7 +16,10 @@ public class Room extends BaseGamePanel implements AutoCloseable {
     private static SocketServer server;// used to refer to accessible server functions
     private String name;
     private int roomId = -1;
+    private final static long ROUND_TIME = 300000000;//Round time is 5 min in nanoseconds
+    public final static long NANOSECOND = 1000000;//1 second in nanoseconds, sources say this is more accurate than ms tracking
     private final static Logger log = Logger.getLogger(Room.class.getName());
+    private GameState state = GameState.LOBBY;
 
     private final static int TEAM_A = 1;
     private final static int TEAM_B = 2;
@@ -27,8 +30,12 @@ public class Room extends BaseGamePanel implements AutoCloseable {
     private final static String JOIN_ROOM = "joinroom";
     private final static String READY = "ready";
     private List<ClientPlayer> clients = new ArrayList<ClientPlayer>();
-    static Dimension gameAreaSize = new Dimension(1280, 720);
-
+    private static Dimension gameAreaSize = new Dimension(1280, 720);
+    
+    private long timeLeft = ROUND_TIME;
+    private long currentNS = 0;
+    private long prevNS = currentNS;
+    
     public Room(String name, boolean delayStart, int id) {
 	super(delayStart);
 	this.name = name;
@@ -256,6 +263,8 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 
     protected void joinRoom(String room, ServerThread client) {
 	server.joinRoom(room, client);
+	state = GameState.LOBBY;
+	log.log(Level.INFO, "Game is in Lobby state");
     }
 
     protected void joinLobby(ServerThread client) {
@@ -302,6 +311,11 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		    wasCommand = true;
 		    break;
 		case READY:
+			if(name.equals("Lobby") || name.equals("PreLobby") ) {
+				response = "/ready is not valid for Lobby! Join a new room!";
+				break;
+			}
+			
 		    clientPlayer = getClientPlayer(client);
 		    if (clientPlayer != null) {
 			clientPlayer.player.setReady(true);
@@ -347,6 +361,10 @@ public class Room extends BaseGamePanel implements AutoCloseable {
     	if (ready >= total) {
     	    // start
     	    System.out.println("Everyone's ready, let's do this!");
+    	    state = GameState.GAME;
+    	    currentNS = System.nanoTime();
+    	    prevNS = currentNS;
+    	    log.log(Level.INFO, "Game has begun in room "+name);
     	}
         }
 
@@ -382,19 +400,22 @@ public class Room extends BaseGamePanel implements AutoCloseable {
      * @param dir
      */
     protected void sendDirectionSync(ServerThread sender, Point dir) {
-	boolean changed = false;
-	// first we'll find the clientPlayer that sent their direction
-	// and update the server-side instance of their direction
-	Iterator<ClientPlayer> iter = clients.iterator();
-	while (iter.hasNext()) {
-	    ClientPlayer client = iter.next();
-	    // update only our server reference for this client
-	    // if we don't have this "if" it'll update all clients (meaning everyone will
-	    // move in sync)
-	    if (client.client == sender) {
-		changed = client.player.setDirection(dir.x, dir.y);
-		break;
-	    }
+    	if(state != GameState.GAME)
+    		return;
+    	
+		boolean changed = false;
+		// first we'll find the clientPlayer that sent their direction
+		// and update the server-side instance of their direction
+		Iterator<ClientPlayer> iter = clients.iterator();
+		while (iter.hasNext()) {
+		    ClientPlayer client = iter.next();
+		    // update only our server reference for this client
+		    // if we don't have this "if" it'll update all clients (meaning everyone will
+		    // move in sync)
+		    if (client.client == sender) {
+			changed = client.player.setDirection(dir.x, dir.y);
+			break;
+		}
 	}
 	// if the direction is "changed" (it should be, but check anyway)
 	// then we'll broadcast the change in direction to all clients
@@ -490,23 +511,39 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 
     @Override
     public void update() {
-	// We'll make the server authoritative
-	// so we'll calc movement/collisions and send the action to the clients so they
-	// can visually update. Client's won't be determining this themselves
-	Iterator<ClientPlayer> iter = clients.iterator();
-	while (iter.hasNext()) {
-	    ClientPlayer p = iter.next();
-	    if (p != null) {
-		// have the server-side player calc their potential new position
-		p.player.move();
-		// determine if we should sync this player's position to all other players
-		checkPositionSync(p);
-	    }
-	}
-
+    	if(state != GameState.GAME)
+    		return;
+    	
+    	prevNS = currentNS;
+    	currentNS = System.nanoTime();
+    	timeLeft -= (currentNS - prevNS);
+    	if(timeLeft <= 0) {
+    		state = GameState.END;
+    		drawWinTeamText();
+    		return;
+    	}
+    	
+		// We'll make the server authoritative
+		// so we'll calc movement/collisions and send the action to the clients so they
+		// can visually update. Client's won't be determining this themselves
+		Iterator<ClientPlayer> iter = clients.iterator();
+		while (iter.hasNext()) {
+		    ClientPlayer p = iter.next();
+		    if (p != null) {
+			// have the server-side player calc their potential new position
+			p.player.move();
+			// determine if we should sync this player's position to all other players
+			checkPositionSync(p);
+		    }
+		}
     }
 
-    // don't call this more than once per frame
+    private void drawWinTeamText() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	// don't call this more than once per frame
     private void nextFrame() {
 	// we'll do basic frame tracking so we can trigger events
 	// less frequently than each frame
@@ -523,12 +560,6 @@ public class Room extends BaseGamePanel implements AutoCloseable {
     }
 
     @Override
-    public void draw(Graphics g) {
-	// this is the server, we won't be using this unless you're adding this view to
-	// the Honor's student extra section
-    }
-
-    @Override
     public void quit() {
 	// don't call close here
 	log.log(Level.WARNING, getName() + " quit() ");
@@ -538,5 +569,19 @@ public class Room extends BaseGamePanel implements AutoCloseable {
     public void attachListeners() {
 	// no listeners either since server side receives no input
     }
+
+	@Override
+	public void draw(Graphics g, GameState state, long timeLeft) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public static long GetNanoSeconds() {
+		return NANOSECOND;
+	}
+
+	public static Dimension getDimensions() {
+		return gameAreaSize;
+	}
 
 }

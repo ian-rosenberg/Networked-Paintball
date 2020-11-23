@@ -6,6 +6,8 @@ import java.util.logging.Logger;
 
 import javax.swing.JPanel;
 
+import server.GameState;
+
 public abstract class BaseGamePanel extends JPanel {
     /**
      * 
@@ -89,16 +91,15 @@ public abstract class BaseGamePanel extends JPanel {
     public abstract void lateUpdate();
 
     // called every frame if !isServer
-    public abstract void draw(Graphics g);
+    public abstract void draw(Graphics g, GameState state, long timeLeft);
 
     // called when loop exits
     public abstract void quit();
 
     // triggers the draw method
-    @Override
     public void paintComponent(Graphics g) {
 	super.paintComponent(g); // paint parent's background
-	draw(g);
+	draw(g, null, Long.MAX_VALUE);
     }
 
     // forces subclasses to determine listeners

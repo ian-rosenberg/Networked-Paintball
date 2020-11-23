@@ -1,5 +1,18 @@
 test.txt
 
+/.classpath
+/.gitignore
+/.project
+/Capture.PNG
+/Homework.class
+/Homework2.class
+/README.MD
+/RecursionToLoop.class
 /client/
-/server/
 /core/
+/hw1.PNG
+/hw2.PNG
+/numberGuesserSave.txt
+/project/
+/server/
+/utils/

@@ -22,6 +22,8 @@ import javax.swing.InputMap;
 import javax.swing.KeyStroke;
 
 import core.BaseGamePanel;
+import server.GameState;
+import server.Room;
 
 public class GamePanel extends BaseGamePanel implements Event {
 
@@ -176,11 +178,11 @@ public class GamePanel extends BaseGamePanel implements Event {
     }
 
     @Override
-    public synchronized void draw(Graphics g) {
+    public synchronized void draw(Graphics g, GameState state, long timeLeft) {
 	setBackground(Color.BLACK);
 	((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 	drawPlayers(g);
-	drawText(g);
+	drawText(g, state, timeLeft);
     }
 
     private synchronized void drawPlayers(Graphics g) {
@@ -193,11 +195,17 @@ public class GamePanel extends BaseGamePanel implements Event {
 	}
     }
 
-    private void drawText(Graphics g) {
+    private void drawText(Graphics g, GameState state, long timeLeft) {
 	g.setColor(Color.WHITE);
 	g.setFont(new Font("Monospaced", Font.PLAIN, 12));
 	if (myPlayer != null) {
 	    g.drawString("Debug MyPlayer: " + myPlayer.toString(), 10, 20);
+	}
+	
+	if(state == GameState.GAME) {
+		g.setColor(Color.WHITE);
+		g.setFont(new Font("Monospaced", Font.BOLD, 24));
+		g.drawString("Time Left: "+(timeLeft/Room.GetNanoSeconds()/60)+"min", Room.getDimensions().width / 2, 50);
 	}
     }
 
