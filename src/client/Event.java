@@ -25,5 +25,7 @@ public interface Event {
 	
 	void onSetPlayerColor(int teamId, String clientName);
 	
-	void onGameStart(Point startPos,  int playerId);
+	void onGameStart(Point startPos,  int playerId);//Setting up for game start
+
+	void onSetPlayerActivity(String clientName, boolean bool);
 }

@@ -36,7 +36,10 @@ public class GamePanel extends BaseGamePanel implements Event {
     Player myPlayer;
     String playerUsername;// caching it so we don't lose it when room is wiped
     private final static Logger log = Logger.getLogger(GamePanel.class.getName());
-
+    private static long timeLeft = Long.MAX_VALUE;
+    private static GameState state = GameState.LOBBY;
+    
+    
     public void setPlayerName(String name) {
 	playerUsername = name;
 	if (myPlayer != null) {
@@ -188,11 +191,11 @@ public class GamePanel extends BaseGamePanel implements Event {
     }
 
     @Override
-    public synchronized void draw(Graphics g, GameState state, long timeLeft) {
+    public synchronized void draw(Graphics g) {
 	setBackground(Color.BLACK);
 	((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 	drawPlayers(g);
-	drawText(g, state, timeLeft);
+	drawText(g);
     }
 
     private synchronized void drawPlayers(Graphics g) {
@@ -205,7 +208,7 @@ public class GamePanel extends BaseGamePanel implements Event {
 	}
     }
 
-    private void drawText(Graphics g, GameState state, long timeLeft) {
+    private void drawText(Graphics g) {
 	g.setColor(Color.WHITE);
 	g.setFont(new Font("Monospaced", Font.PLAIN, 12));
 	if (myPlayer != null) {
@@ -343,5 +346,15 @@ public class GamePanel extends BaseGamePanel implements Event {
 		}
 		
 		repaint();
+	}
+
+	@Override
+	public void onSetPlayerActivity(String clientName, boolean bool) {
+		for(Player player: players) {
+			if(player.getName() == clientName) {
+				player.setActive(bool);
+			}
+		}
+		
 	}
 }

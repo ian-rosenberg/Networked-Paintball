@@ -15,5 +15,6 @@ public enum PayloadType {
     ASSIGN_ID,
     SET_TEAM_INFO,
     READY,
-    GAME_STARTED
+    GAME_STARTED, 
+    SET_ACTIVITY,
 }

@@ -195,6 +195,17 @@ public enum SocketClient {
     	}
 	}
 
+
+    private void setPlayerActivity(String clientName, boolean bool) {
+    	Iterator<Event> iter = events.iterator();
+    	while (iter.hasNext()) {
+    	    Event e = iter.next();
+    	    if (e != null) {
+    	    	e.onSetPlayerActivity(clientName, bool);
+    	    }
+    	}
+	}
+	
     /***
      * Determine any special logic for different PayloadTypes
      * 
@@ -231,6 +242,9 @@ public enum SocketClient {
 	case SET_TEAM_INFO:
 		setPlayerColor(p.getNumber(), p.getClientName());
 		break;
+	case SET_ACTIVITY:
+		setPlayerActivity(p.getClientName(), p.getBool());
+		break;
 	default:
 	    log.log(Level.WARNING, "unhandled payload on client" + p);
 	    break;
@@ -238,7 +252,7 @@ public enum SocketClient {
 	}
     }
 
-    // TODO Start public methods here
+	// TODO Start public methods here
 
 	public void registerCallbackListener(Event e) {
 	events.add(e);

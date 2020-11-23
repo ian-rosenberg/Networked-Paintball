@@ -198,6 +198,8 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	    		}
 	    	}
 		}
+		
+		broadcastSetPlayersInactive();
     }
      
     
@@ -364,6 +366,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
     	    System.out.println("Everyone's ready, let's do this!");
     	    state = GameState.GAME;
     	    currentNS = System.nanoTime();
+    		broadcastSetPlayersActive();
     	    prevNS = currentNS;
     	    log.log(Level.INFO, "Game has begun in room "+name);
     	}
@@ -518,8 +521,9 @@ public class Room extends BaseGamePanel implements AutoCloseable {
     	prevNS = currentNS;
     	currentNS = System.nanoTime();
     	timeLeft -= (currentNS - prevNS);
-    	if(timeLeft <= 0) {
+    	if(timeLeft <= 0 && state != GameState.END) {
     		state = GameState.END;
+    		broadcastSetPlayersInactive();
     		return;
     	}
     	
@@ -537,6 +541,26 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		    }
 		}
     }
+
+	private void broadcastSetPlayersInactive() {
+		Iterator<ClientPlayer> iter = clients.iterator();
+		while (iter.hasNext()) {
+		    ClientPlayer c = iter.next();
+		    c.player.setActive(false);
+		    boolean messageSent = c.client.sendActiveStatus(c.player.getName(), false);
+		    log.log(Level.INFO, "Set client " + c.player.getId() + " inactive!");
+		}		
+	}
+	
+	private void broadcastSetPlayersActive() {
+		Iterator<ClientPlayer> iter = clients.iterator();
+		while (iter.hasNext()) {
+		    ClientPlayer c = iter.next();
+		    c.player.setActive(true);
+		    boolean messageSent = c.client.sendActiveStatus(c.player.getName(), true);
+		    log.log(Level.INFO, "Set client " + c.player.getId() + " active!");
+		}		
+	}
 
 	// don't call this more than once per frame
     private void nextFrame() {
@@ -565,18 +589,18 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	// no listeners either since server side receives no input
     }
 
-	@Override
-	public void draw(Graphics g, GameState state, long timeLeft) {
-		// TODO Auto-generated method stub
-		
-	}
-
 	public static long GetNanoSeconds() {
 		return NANOSECOND;
 	}
 
 	public static Dimension getDimensions() {
 		return gameAreaSize;
+	}
+
+	@Override
+	public void draw(Graphics g) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

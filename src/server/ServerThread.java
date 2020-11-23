@@ -288,4 +288,13 @@ public class ServerThread extends Thread {
 	    }
 	}
     }
+
+	public boolean sendActiveStatus(String name, boolean b) {
+		Payload payload = new Payload();
+		// using same payload type as a response trigger
+		payload.setPayloadType(PayloadType.SET_ACTIVITY);
+		payload.setBool(b);
+		payload.setClientName(name);
+		return sendPayload(payload);
+	}
 }

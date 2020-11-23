@@ -430,4 +430,16 @@ public class ClientUI extends JFrame implements Event {
 		repaint();
 	}
 
+	@Override
+	public void onGameStart(Point startPos, int playerId) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onSetPlayerActivity(String clientName, boolean bool) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

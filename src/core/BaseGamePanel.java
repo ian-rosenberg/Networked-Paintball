@@ -91,7 +91,7 @@ public abstract class BaseGamePanel extends JPanel {
     public abstract void lateUpdate();
 
     // called every frame if !isServer
-    public abstract void draw(Graphics g, GameState state, long timeLeft);
+    public abstract void draw(Graphics g);
 
     // called when loop exits
     public abstract void quit();
@@ -99,7 +99,7 @@ public abstract class BaseGamePanel extends JPanel {
     // triggers the draw method
     public void paintComponent(Graphics g) {
 	super.paintComponent(g); // paint parent's background
-	draw(g, null, Long.MAX_VALUE);
+	draw(g);
     }
 
     // forces subclasses to determine listeners
