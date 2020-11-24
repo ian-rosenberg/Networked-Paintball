@@ -1,4 +1,3 @@
-Fix new players not being disabled on their screen and other clients' screens
 
 Get Timer working
 

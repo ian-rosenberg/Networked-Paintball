@@ -104,7 +104,7 @@ public class Payload implements Serializable {
 				getMessage());
 	}
 
-	private boolean boolVal = false;
+	private boolean boolVal;
 
 	public void setBool(boolean b) {
 		boolVal = b;
@@ -114,7 +114,7 @@ public class Payload implements Serializable {
 		return boolVal;
 	}
 
-	private GameState gameState = GameState.LOBBY;
+	private GameState gameState;
 
 	public void setState(GameState state) {
 		gameState = state;
@@ -124,7 +124,7 @@ public class Payload implements Serializable {
 		return gameState;
 	}
 
-	private long timer = 0;
+	private long timer;
 
 	public void setTime(long t) {
 		timer = t;

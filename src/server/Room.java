@@ -16,6 +16,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	private static SocketServer server;// used to refer to accessible server functions
 	private String name;
 	private int roomId = -1;
+	private final static int MINUTE = 60;
 	private final static long ROUND_TIME = 300000000;// Round time is 5 min in nanoseconds
 	public final static long NANOSECOND = 1000000;// 1 second in nanoseconds, sources say this is more accurate than ms
 													// tracking
@@ -34,6 +35,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	private static Dimension gameAreaSize = new Dimension(1280, 720);
 
 	private long timeLeft = ROUND_TIME;
+	private int minutesLeft = 5;
 	private long currentNS = 0;
 	private long prevNS = currentNS;
 
@@ -173,6 +175,10 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			updateClientList(cp.client);
 			// get dir/pos of existing players
 			updatePlayers(cp.client);
+			//Disable all player gameobjects when we add a client, for now
+			//At some point I should filter out extra players after a game begins
+			//into spectators
+			broadcastSetPlayersInactive();
 		}
 	}
 
@@ -198,8 +204,6 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 				}
 			}
 		}
-
-		broadcastSetPlayersInactive();
 	}
 
 	private void syncTeams(ClientPlayer current) {
@@ -279,8 +283,8 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	 * @param client  The sender of the message (since they'll be the ones
 	 *                triggering the actions)
 	 */
-	private boolean processCommands(String message, ServerThread client) {
-		boolean wasCommand = false;
+	private String processCommands(String message, ServerThread client) {
+		String response = null;
 		try {
 			if (message.indexOf(COMMAND_TRIGGER) > -1) {
 				String[] comm = message.split(COMMAND_TRIGGER);
@@ -288,7 +292,6 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 				String part1 = comm[1];
 				String[] comm2 = part1.split(" ");
 				String command = comm2[0];
-				String response = "";
 				ClientPlayer clientPlayer = null;
 				if (command != null) {
 					command = command.toLowerCase();
@@ -301,13 +304,10 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 					if (clientPlayer != null) {
 						createRoom(roomName, client);
 					}
-
-					wasCommand = true;
 					break;
 				case JOIN_ROOM:
 					roomName = comm2[1];
 					joinRoom(roomName, client);
-					wasCommand = true;
 					break;
 				case READY:
 					if (name.equals("Lobby")) {
@@ -331,7 +331,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return wasCommand;
+		return response;
 	}
 
 	protected void sendConnectionStatus(ServerThread client, boolean isConnect, String message, int userId) {
@@ -378,7 +378,8 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	 */
 	protected void sendMessage(ServerThread sender, String message) {
 		log.log(Level.INFO, getName() + ": Sending message to " + clients.size() + " clients");
-		if (processCommands(message, sender)) {
+		message = processCommands(message, sender);
+		if (message == null) {
 			// it was a command, don't broadcast
 			return;
 		}
@@ -517,6 +518,12 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		prevNS = currentNS;
 		currentNS = System.nanoTime();
 		timeLeft -= (currentNS - prevNS);
+		
+		if((int)(timeLeft / NANOSECOND / MINUTE) < minutesLeft && state == GameState.GAME) {
+			minutesLeft--;
+			broadcastTimeLeft();
+		}
+		
 		if (timeLeft <= 0 && state != GameState.END) {
 			state = GameState.END;
 			broadcastGameState();
@@ -616,6 +623,10 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	public void draw(Graphics g) {
 		// TODO Auto-generated method stub
 
+	}
+
+	public static long getMinute() {
+		return MINUTE;
 	}
 
 }

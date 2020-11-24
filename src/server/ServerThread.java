@@ -150,7 +150,7 @@ public class ServerThread extends Thread {
 
 	protected boolean sendGameState(GameState state) {
 		Payload payload = new Payload();
-		payload.setPayloadType(PayloadType.SET_ACTIVITY);
+		payload.setPayloadType(PayloadType.GAME_STATE);
 		payload.setState(state);
 		return sendPayload(payload);
 	}

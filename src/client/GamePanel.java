@@ -216,7 +216,7 @@ public class GamePanel extends BaseGamePanel implements Event {
 		if (gameState == GameState.GAME) {
 			g.setColor(Color.WHITE);
 			g.setFont(new Font("Monospaced", Font.BOLD, 24));
-			g.drawString("Time Left: " + (timeLeft / Room.GetNanoSeconds() / 60) + "min left!",
+			g.drawString("Time Left: " + (timeLeft / Room.GetNanoSeconds() / Room.getMinute()) + "min left!",
 					Room.getDimensions().width / 2, 50);
 		} else {
 			g.setColor(Color.WHITE);
