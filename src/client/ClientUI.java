@@ -419,6 +419,14 @@ public class ClientUI extends JFrame implements Event {
 
 	@Override
 	public void onSetPlayerColor(int teamId, String playerName) {
+		for(User user: users) {
+			if(user.getName() == playerName) {
+				user.setUserColor(teamId);			
+				
+				break;
+			}
+		}
+		
 		repaint();
 	}
 

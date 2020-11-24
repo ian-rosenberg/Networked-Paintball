@@ -53,7 +53,7 @@ public class Player extends GameObject implements Serializable {
     	//Only two teams. Splatoon colors, heh
     	switch(teamNumber) {
     		case 1: 
-    			color = Color.pink;
+    			color = new Color(255, 105, 180);//hot pink
     			break;
     		case 2: 
     			color = Color.green;
