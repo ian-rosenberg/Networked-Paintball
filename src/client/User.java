@@ -9,7 +9,7 @@ import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-public class User extends JPanel implements Event{
+public class User extends JPanel{
 	private int id = -1;
     private String name;
     private JEditorPane nameField;
@@ -38,77 +38,15 @@ public class User extends JPanel implements Event{
 		id = ID;
 	}
 
-	@Override
-	public void onClientConnect(String clientName, String message, int id) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onClientDisconnect(String clientName, String message) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onMessageReceive(String clientName, String message) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onChangeRoom() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onSyncDirection(String clientName, Point direction) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onSyncPosition(String clientName, Point position) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onSyncWeaponFire(int team, Point position, Point direction) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onGetRoom(String roomname) {
-		// TODO Auto-generated method stub
-		
-	}
-	
-	@Override
-	public void onSetId(int newId) {
-		id = newId;	
-	}
-
-	@Override
-	public void onSetPlayerColor(int teamId, String playerName) {
+	public void setUserColor(int teamId) {
 		if(teamId == 1){
-    		textColor = "pink";
+    		textColor = "#FF69B4";
     	}
     	else {
     		textColor = "green";
     	}
-
-		name = playerName;
 		
     	nameField.setText("<span style='color:"+textColor+"'>"+name+"</span>");
     	repaint();
-	}
-
-	@Override
-	public void onChangeTeam(int number) {
-		// TODO Auto-generated method stub
-		
-	}
+	}	
 }
