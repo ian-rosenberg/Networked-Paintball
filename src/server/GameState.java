@@ -1,5 +1,7 @@
 package server;
 
 public enum GameState {
-	LOBBY, GAME, END,
+	LOBBY, 
+	GAME, 
+	END,
 }
