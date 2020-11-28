@@ -208,7 +208,7 @@ public enum SocketClient {
 	}
 	
 
-	void setTimeLeft(long time) {
+	private void setTimeLeft(long time) {
 		Iterator<Event> iter = events.iterator();
 		while (iter.hasNext()) {
 			Event e = iter.next();
@@ -217,6 +217,17 @@ public enum SocketClient {
 			}
 		}
 	}
+	
+	private void setGameBoundary(Point point) {
+		Iterator<Event> iter = events.iterator();
+		while (iter.hasNext()) {
+			Event e = iter.next();
+			if (e != null) {
+				e.onSetGameBoundary(point.x, point.y);
+			}
+		}
+	}
+
 
 	/***
 	 * Determine any special logic for different PayloadTypes
@@ -262,6 +273,9 @@ public enum SocketClient {
 			break;
 		case TIMER:
 			setTimeLeft(p.getTime());
+			break;
+		case SYNC_DIMENSIONS:
+			setGameBoundary(p.getPoint());
 			break;
 		default:
 			log.log(Level.WARNING, "unhandled payload on client" + p);

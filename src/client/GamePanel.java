@@ -1,6 +1,7 @@
 package client;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -12,6 +13,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,11 +35,12 @@ public class GamePanel extends BaseGamePanel implements Event {
 	Player myPlayer;
 	String playerUsername;// caching it so we don't lose it when room is wiped
 	private final static Logger log = Logger.getLogger(GamePanel.class.getName());
-	private final static long ROUND_TIME = 300000000;// Round time is 5 min in nanoseconds
-	public final static long NANOSECOND = 1000000;// 1 second in nanoseconds, sources say this is more accurate than ms
-													// tracking
+	private final static long ROUND_TIME = TimeUnit.MINUTES.toNanos(5);// Round time is 5 min in nanoseconds
+	public final static long MINUTE = TimeUnit.MINUTES.toNanos(1);// 1 second in nanoseconds, sources say this is more accurate than ms
+	private static final int TEXT_FACTOR = 6;//Prof said a size of 3 was acceptable for 12pt font, so I'll double for 24pt font
 	private static long timeLeft = ROUND_TIME;
 	private static GameState gameState = GameState.LOBBY;
+	private static Dimension boundary;
 
 	public void setPlayerName(String name) {
 		playerUsername = name;
@@ -191,9 +194,18 @@ public class GamePanel extends BaseGamePanel implements Event {
 	@Override
 	public synchronized void draw(Graphics g) {
 		setBackground(Color.BLACK);
+		drawBorder(g);
 		((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		drawPlayers(g);
 		drawText(g);
+	}
+
+	private void drawBorder(Graphics g) {
+		if(boundary != null) {
+			g.setColor(Color.WHITE);
+			g.drawRect(5,5,boundary.width-10, boundary.height-10);
+		}
+		
 	}
 
 	private synchronized void drawPlayers(Graphics g) {
@@ -214,14 +226,18 @@ public class GamePanel extends BaseGamePanel implements Event {
 		}
 
 		if (gameState == GameState.GAME) {
+			String timeLeftStr = "Time Left: " + (timeLeft / MINUTE) + "min left!";
+			int offset = (boundary.width / 2) - (timeLeftStr.length() * TEXT_FACTOR);
 			g.setColor(Color.WHITE);
 			g.setFont(new Font("Monospaced", Font.BOLD, 24));
-			g.drawString("Time Left: " + (timeLeft / Room.GetNanoSeconds() / Room.getMinute()) + "min left!",
-					Room.getDimensions().width / 2, 50);
+			g.drawString(timeLeftStr,
+					boundary.width / 2, 25);
 		} else {
+			String notStartedStr = "Game has not started yet!";
+			int offset = (boundary.width / 2) - (notStartedStr.length() * TEXT_FACTOR);
 			g.setColor(Color.WHITE);
 			g.setFont(new Font("Monospaced", Font.BOLD, 24));
-			g.drawString("Game has not started yet!", Room.getDimensions().width / 2, 50);
+			g.drawString(notStartedStr, offset, 50);
 		}
 	}
 
@@ -361,5 +377,10 @@ public class GamePanel extends BaseGamePanel implements Event {
 	@Override
 	public void onSetTimeLeft(long time) {
 		timeLeft = time;
+	}
+
+	@Override
+	public void onSetGameBoundary(int x, int y) {
+		boundary = new Dimension(x, y);
 	}
 }

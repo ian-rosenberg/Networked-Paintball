@@ -6,6 +6,7 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,10 +17,8 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	private static SocketServer server;// used to refer to accessible server functions
 	private String name;
 	private int roomId = -1;
-	private final static int MINUTE = 60;
-	private final static long ROUND_TIME = 300000000;// Round time is 5 min in nanoseconds
-	public final static long NANOSECOND = 1000000;// 1 second in nanoseconds, sources say this is more accurate than ms
-													// tracking
+	private final static long MINUTE_NANO = TimeUnit.MINUTES.toNanos(1);
+	private final static long ROUND_TIME = TimeUnit.MINUTES.toNanos(5);// Round time is 5 min in nanoseconds
 	private final static Logger log = Logger.getLogger(Room.class.getName());
 	private GameState state = GameState.LOBBY;
 
@@ -78,6 +77,8 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			clientPlayer.player.setTeam(TEAM_B);
 			clientPlayer.client.sendTeamInfo(TEAM_B, name);
 		}
+		
+		clientPlayer.client.sendBoundary(gameAreaSize);
 	}
 
 	private ClientPlayer getClientPlayer(ServerThread client) {
@@ -519,7 +520,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		currentNS = System.nanoTime();
 		timeLeft -= (currentNS - prevNS);
 		
-		if((int)(timeLeft / NANOSECOND / MINUTE) < minutesLeft && state == GameState.GAME) {
+		if((int)(timeLeft / MINUTE_NANO) < minutesLeft && state == GameState.GAME) {
 			minutesLeft--;
 			broadcastTimeLeft();
 		}
@@ -611,10 +612,6 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		// no listeners either since server side receives no input
 	}
 
-	public static long GetNanoSeconds() {
-		return NANOSECOND;
-	}
-
 	public static Dimension getDimensions() {
 		return gameAreaSize;
 	}
@@ -626,7 +623,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	}
 
 	public static long getMinute() {
-		return MINUTE;
+		return MINUTE_NANO;
 	}
 
 }

@@ -1,5 +1,6 @@
 package server;
 
+import java.awt.Dimension;
 import java.awt.Point;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -162,6 +163,16 @@ public class ServerThread extends Thread {
 		return sendPayload(payload);
 	}
 
+
+
+	protected boolean sendBoundary(Dimension gameAreaSize) {
+		Payload payload = new Payload();
+		payload.setPayloadType(PayloadType.SYNC_DIMENSIONS);
+		payload.setPoint(new Point(gameAreaSize.width, gameAreaSize.height));
+		return sendPayload(payload);
+	}
+	
+	
 	private boolean sendPayload(Payload p) {
 		try {
 			out.writeObject(p);

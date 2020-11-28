@@ -50,11 +50,13 @@ public class ClientUI extends JFrame implements Event {
 	JMenuItem roomsSearch;
 	List<User> users = new ArrayList<User>();
 	private final static Logger log = Logger.getLogger(ClientUI.class.getName());
+	private static Dimension gamePanelSize = new Dimension(0,0);
 	Dimension windowSize = Toolkit.getDefaultToolkit().getScreenSize();
 	GamePanel game;
 	String username;
 	RoomsPanel roomsPanel;
 	JMenuBar menu;
+	
 
 	public ClientUI(String title) {
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -206,7 +208,7 @@ public class ClientUI extends JFrame implements Event {
 
 	void createDrawingPanel() {
 		game = new GamePanel();
-		game.setPreferredSize(new Dimension((int) (windowSize.width * .8), windowSize.height));
+		game.setPreferredSize(gamePanelSize);
 		textArea.getParent().getParent().getParent().add(game, BorderLayout.WEST);
 
 		// TODO unsubscribe when done
@@ -451,6 +453,15 @@ public class ClientUI extends JFrame implements Event {
 	public void onSetTimeLeft(long time) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void onSetGameBoundary(int x, int y) {
+		gamePanelSize.width = x;
+		gamePanelSize.height = y;
+
+		game.setPreferredSize(gamePanelSize);
+		revalidate();
 	}
 
 }

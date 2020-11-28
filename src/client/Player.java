@@ -13,9 +13,10 @@ public class Player extends GameObject implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = -6088251166673414031L;
-	Color color = Color.WHITE;
-	Point nameOffset = new Point(0, -5);
-	boolean isReady = false;
+	private Color color = Color.WHITE;
+	private Point nameOffset = new Point(0, -5);
+	private boolean isReady = false;
+	private int HP = 3;
 
 	public void setReady(boolean r) {
 		isReady = r;
