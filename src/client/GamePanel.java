@@ -39,6 +39,8 @@ public class GamePanel extends BaseGamePanel implements Event {
 	public final static long MINUTE = TimeUnit.MINUTES.toNanos(1);// 1 second in nanoseconds, sources say this is more accurate than ms
 	private static final int TEXT_FACTOR = 6;//Prof said a size of 3 was acceptable for 12pt font, so I'll double for 24pt font
 	private static long timeLeft = ROUND_TIME;
+	private static int teamBScore = 0;
+	private static int teamAScore = 0;
 	private static GameState gameState = GameState.LOBBY;
 	private static Dimension boundary;
 
@@ -227,11 +229,12 @@ public class GamePanel extends BaseGamePanel implements Event {
 
 		if (gameState == GameState.GAME) {
 			String timeLeftStr = "Time Left: " + (timeLeft / MINUTE) + "min left!";
-			int offset = (boundary.width / 2) - (timeLeftStr.length() * TEXT_FACTOR);
 			g.setColor(Color.WHITE);
 			g.setFont(new Font("Monospaced", Font.BOLD, 24));
 			g.drawString(timeLeftStr,
 					boundary.width / 2, 25);
+			g.drawString("Team A Score: "+ teamAScore, boundary.width / 3, 50);
+			g.drawString("Team B Score: "+ teamBScore, (int)(boundary.width * 0.667), 50);
 		} else {
 			String notStartedStr = "Game has not started yet!";
 			int offset = (boundary.width / 2) - (notStartedStr.length() * TEXT_FACTOR);

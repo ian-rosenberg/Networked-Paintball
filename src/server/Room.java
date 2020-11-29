@@ -514,13 +514,13 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	@Override
 	public void update() {
 		if (state != GameState.GAME)
-			timeLeft = Long.MAX_VALUE;
+			timeLeft = ROUND_TIME;
 
 		prevNS = currentNS;
 		currentNS = System.nanoTime();
 		timeLeft -= (currentNS - prevNS);
 		
-		if((int)(timeLeft / MINUTE_NANO) < minutesLeft && state == GameState.GAME) {
+		if((timeLeft / MINUTE_NANO) < minutesLeft && state == GameState.GAME) {
 			minutesLeft--;
 			broadcastTimeLeft();
 		}
@@ -552,7 +552,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		while (iter.hasNext()) {
 			ClientPlayer c = iter.next();
 			c.client.sendTimeLeft(timeLeft);
-			log.log(Level.INFO, timeLeft + " minutes left");
+			log.log(Level.INFO, timeLeft/MINUTE_NANO + " minutes left");
 		}
 	}
 	
