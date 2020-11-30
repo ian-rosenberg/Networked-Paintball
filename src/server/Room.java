@@ -427,12 +427,13 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			while (iter.hasNext()) {
 				ClientPlayer client = iter.next();
 				boolean messageSent = client.client.sendDirection(sender.getClientName(), dir);
+					
 				if (!messageSent) {
 					iter.remove();
 					log.log(Level.INFO, "Removed client " + client.client.getId());
 				}
 			}
-
+			
 		}
 	}
 
@@ -531,7 +532,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			broadcastSetPlayersInactive();
 			return;
 		}
-
+		
 		// We'll make the server authoritative
 		// so we'll calc movement/collisions and send the action to the clients so they
 		// can visually update. Client's won't be determining this themselves
@@ -563,7 +564,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			c.client.sendGameState(state);
 			log.log(Level.INFO, "Sending client " + c.player.getId() + " game status " + state.toString());
 		}
-	}
+	}	
 
 	private void broadcastSetPlayersInactive() {
 		Iterator<ClientPlayer> iter = clients.iterator();

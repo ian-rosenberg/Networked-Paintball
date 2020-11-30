@@ -226,8 +226,7 @@ public enum SocketClient {
 				e.onSetGameBoundary(point.x, point.y);
 			}
 		}
-	}
-
+	}	
 
 	/***
 	 * Determine any special logic for different PayloadTypes

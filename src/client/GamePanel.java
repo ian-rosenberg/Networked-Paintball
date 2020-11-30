@@ -287,6 +287,7 @@ public class GamePanel extends BaseGamePanel implements Event {
 		while (iter.hasNext()) {
 			Player p = iter.next();
 			if (p != null && p.getName().equalsIgnoreCase(clientName)) {
+				p.setDirectionLine(direction);
 				System.out.println("Syncing direction: " + clientName);
 				p.setDirection(direction.x, direction.y);
 				System.out.println("From: " + direction);

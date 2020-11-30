@@ -171,8 +171,7 @@ public class ServerThread extends Thread {
 		payload.setPoint(new Point(gameAreaSize.width, gameAreaSize.height));
 		return sendPayload(payload);
 	}
-	
-	
+		
 	private boolean sendPayload(Payload p) {
 		try {
 			out.writeObject(p);
@@ -215,6 +214,7 @@ public class ServerThread extends Thread {
 			break;
 		case SYNC_DIRECTION:
 			currentRoom.sendDirectionSync(this, p.getPoint());
+			
 			break;
 		case SYNC_POSITION:
 			// In my sample client will not be sharing their position
