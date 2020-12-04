@@ -13,10 +13,18 @@ public class Player extends GameObject implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = -6088251166673414031L;
-	Color color = Color.WHITE;
-	Point nameOffset = new Point(0, -5);
-	boolean isReady = false;
+	private static final int LINE_FACTOR = 20;
+	private Color color = Color.WHITE;
+	private Point nameOffset = new Point(0, -5);
+	private boolean isReady = false;
+	private Point lineEnd = new Point(position.x + (size.width/2), position.y + (size.height/2));
+	private int HP = 3;
 
+	public void setDirectionLine(Point dir) {
+		lineEnd.x = dir.x;
+		lineEnd.y = dir.y;
+	}
+	
 	public void setReady(boolean r) {
 		isReady = r;
 	}
@@ -38,6 +46,9 @@ public class Player extends GameObject implements Serializable {
 			g.setColor(Color.WHITE);
 			g.setFont(new Font("Monospaced", Font.PLAIN, 12));
 			g.drawString("Name: " + name, position.x + nameOffset.x, position.y + nameOffset.y);
+			if(lineEnd.x != position.x || lineEnd.y != position.y) {
+				g.drawLine(position.x + (size.width/2), position.y + (size.height/2), position.x + (size.width/2) + (lineEnd.x * LINE_FACTOR), position.y + (size.height/2) + (lineEnd.y * LINE_FACTOR));
+			}
 		}
 		return true;
 	}
