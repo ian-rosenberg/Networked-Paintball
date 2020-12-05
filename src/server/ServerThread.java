@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import core.Projectile;
 import server.Payload.ProjectileInfo;
 
 public class ServerThread extends Thread {
@@ -165,12 +166,26 @@ public class ServerThread extends Thread {
 		return sendPayload(payload);
 	}
 
-
+	protected boolean sendSyncProjectile(Projectile proj) {
+		Payload payload = new Payload();
+		payload.setPayloadType(PayloadType.SYNC_BULLET);
+		payload.setClientProjectileInfo(proj.getTeam(), proj.getId(), proj.getDirX(), proj.getPosition());
+		payload.setPoint(proj.getPosition());
+		return sendPayload(payload);
+	}
 
 	protected boolean sendBoundary(Dimension gameAreaSize) {
 		Payload payload = new Payload();
 		payload.setPayloadType(PayloadType.SYNC_DIMENSIONS);
 		payload.setPoint(new Point(gameAreaSize.width, gameAreaSize.height));
+		return sendPayload(payload);
+	}
+	
+
+	protected boolean syncRemoveProjectile(int id) {
+		Payload payload = new Payload();
+		payload.setPayloadType(PayloadType.DESTROY_BULLET);
+		payload.setNumber(id);
 		return sendPayload(payload);
 	}
 		
@@ -243,8 +258,7 @@ public class ServerThread extends Thread {
 			}
 			break;
 		case SHOOT:
-			Room toShootIn = 
-			getSyncBullet(p.getProjectileInfo());
+			currentRoom.getSyncBullet(p.getProjectileInfo());
 			break;
 		default:
 			log.log(Level.INFO, "Unhandled payload on server: " + p);

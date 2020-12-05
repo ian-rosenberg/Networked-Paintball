@@ -59,23 +59,6 @@ public class Player extends GameObject implements Serializable {
 				position.x, position.y, speed.x, speed.y, direction.x, direction.y, isActive);
 	}
 
-	@Override
-	public void setTeam(int teamNumber) {
-		// Only two teams. Splatoon colors, heh
-		switch (teamNumber) {
-		case 1:
-			color = new Color(255, 105, 180);// hot pink
-			break;
-		case 2:
-			color = Color.green;
-			break;
-		default:
-			break;
-		}
-
-		team = teamNumber;
-	}
-
 	public Color getColor() {
 		return color;
 	}

@@ -1,4 +1,9 @@
+Working on projectile firing
+	Need to sync projectile position to all clients
+	And sync drawing projectiles on game panel
 
-Get Timer working
+When the bullet goes offscreen
+	remove it and destroy
+	set player able to fire again
 
-Get game start working
+Lock players to game area

@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import client.Player;
 import core.BaseGamePanel;
 import core.Projectile;
+import server.Payload.ProjectileInfo;
 
 public class Room extends BaseGamePanel implements AutoCloseable {
 	private static SocketServer server;// used to refer to accessible server functions
@@ -230,7 +231,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			ClientPlayer c = iter.next();
 			if (c.client != client) {
 				boolean messageSent = client.sendConnectionStatus(c.client.getClientName(), true, null,
-						c.player.getId());
+				c.player.getId());
 			}
 		}
 	}
@@ -449,10 +450,35 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		Iterator<ClientPlayer> iter = clients.iterator();
 		while (iter.hasNext()) {
 			ClientPlayer client = iter.next();
+			client.player.setPosition(pos);
 			boolean messageSent = client.client.sendPosition(sender.getClientName(), pos);
 			if (!messageSent) {
 				iter.remove();
 				log.log(Level.INFO, "Removed client " + client.client.getId());
+			}
+		}
+	}
+	
+	protected void sendSyncProjectile(Projectile proj) {
+		Iterator<ClientPlayer> iter = clients.iterator();
+		while (iter.hasNext()) {
+			ClientPlayer client = iter.next();
+			client.client.sendSyncProjectile(proj);
+		}
+	}
+	
+	protected void sendRemoveProjectile(int id) {
+		Iterator<ClientPlayer> iter = clients.iterator();
+		while (iter.hasNext()) {
+			ClientPlayer client = iter.next();
+			Iterator<Projectile> pIter = projectiles.iterator();
+			while(pIter.hasNext()) {
+				Projectile proj = pIter.next();
+				
+				if(proj.getId() == id) {
+					client.client.syncRemoveProjectile(proj.getId());
+					pIter.remove();
+				}
 			}
 		}
 	}
@@ -512,6 +538,21 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			}
 		}
 
+	}	
+	
+	void checkProjectilePositionSync(ClientPlayer cp) {
+		// determine the maximum syncing needed
+		// you do NOT need it every frame, if you do it could cause network congestion
+		// and
+		// lots of bandwidth that doesn't need to be utilized
+		if (frame % 120 == 0) {// sync every 120 frames (i.e., if 60 fps that's every 2 seconds)
+			// check if it's worth sycning the position
+			// again this is to save unnecessary data transfer
+			if (cp.player.changedPosition()) {
+				sendPositionSync(cp.client, cp.player.getPosition());
+			}
+		}
+
 	}
 
 	@Override
@@ -535,9 +576,25 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			return;
 		}
 		
-		// We'll make the server authoritative
-		// so we'll calc movement/collisions and send the action to the clients so they
-		// can visually update. Client's won't be determining this themselves
+		if(projectiles.size()> 0)
+		{
+			Iterator<Projectile> pIter = projectiles.iterator();
+			while (pIter.hasNext()) {
+				Projectile p = pIter.next();
+				
+				if(p != null && p.isActive()) {
+					p.move();
+					if(p.passedScreenBounds(gameAreaSize)) {
+						sendRemoveProjectile(p.getId());
+						break;
+					}
+					else {
+						sendSyncProjectile(p);
+					}
+				}
+				//TODO: do collision checking
+			}
+		}
 		Iterator<ClientPlayer> iter = clients.iterator();
 		while (iter.hasNext()) {
 			ClientPlayer p = iter.next();
@@ -627,6 +684,33 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 
 	public static long getMinute() {
 		return MINUTE_NANO;
+	}
+
+	public void getSyncBullet(ProjectileInfo projectileInfo) {
+		Iterator<ClientPlayer> iter = clients.iterator();
+		while (iter.hasNext()) {
+			ClientPlayer cp = iter.next();
+			
+			if(cp.player.getId() == projectileInfo.getPlayerId() && !cp.hasFired()) {
+				cp.setHasFired(true);
+				int dirX = 0;
+				
+				if(projectileInfo.getTeamId() == 1) {
+					dirX = 1;
+				}
+				else {
+					dirX = -1;
+				}
+				
+				
+				Projectile newProj = new Projectile(cp.player.getTeam(),
+						projectiles.size(),
+						dirX,
+						cp.player.getPosition());
+				
+				projectiles.add(newProj);		
+			}
+		}
 	}
 
 }

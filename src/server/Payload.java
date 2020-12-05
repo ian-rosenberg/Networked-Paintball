@@ -45,8 +45,7 @@ public class Payload implements Serializable {
 		private static final long serialVersionUID = 1L;
 		private int teamId = 0;
 		private int playerId = -1;
-		private double dirX = 0.0;
-		private double dirY = -1.0;
+		private int dirX = 0;
 		
 		public void setTeamId(int id) {
 			teamId = id;
@@ -56,19 +55,11 @@ public class Payload implements Serializable {
 			return teamId;
 		}
 
-		public double getDirY() {
-			return dirY;
-		}
-
-		public void setDirY(double dirY) {
-			this.dirY = dirY;
-		}
-
-		public double getDirX() {
+		public int getDirX() {
 			return dirX;
 		}
 
-		public void setDirX(double dirX) {
+		public void setDirX(int dirX) {
 			this.dirX = dirX;
 		}
 
@@ -85,10 +76,9 @@ public class Payload implements Serializable {
 		return projectilePayload;
 	}
 	
-	public void setProjectileInfo(int team, int ownerId, double dX, double dY) {
+	public void setProjectileInfo(int team, int ownerId, int dX) {
 		projectilePayload.setTeamId(team);
 		projectilePayload.setDirX(dX);
-		projectilePayload.setDirX(dY);
 		projectilePayload.setPlayerId(ownerId);
 	}
 
@@ -185,5 +175,11 @@ public class Payload implements Serializable {
 
 	public long getTime() {
 		return timer;
+	}
+
+	public void setClientProjectileInfo(int teamId, int playerId, int dirX, Point position) {
+		projectilePayload.setTeamId(teamId);
+		projectilePayload.setPlayerId(playerId);
+		projectilePayload.setDirX(dirX);
 	}
 }

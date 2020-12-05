@@ -17,8 +17,6 @@ public interface Event {
 
 	void onSyncPosition(String clientName, Point position);
 
-	void onSyncWeaponFire(int team, Point position, Point direction);
-
 	void onGetRoom(String roomname);
 
 	void onChangeTeam(int number);
@@ -36,4 +34,8 @@ public interface Event {
 	void onSetTimeLeft(long time);
 
 	void onSetGameBoundary(int x, int y);
+
+	void onSetBulletPosition(int teamId, int bulletId, int xDir, Point newPos);
+
+	void onRemoveBullet(int id);
 }

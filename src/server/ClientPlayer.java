@@ -8,6 +8,16 @@ public class ClientPlayer {
 		this.player = player;
 	}
 
+	public boolean hasFired() {
+		return hasFired;
+	}
+
+	public void setHasFired(boolean hasFired) {
+		this.hasFired = hasFired;
+	}
+
 	public ServerThread client;
 	public Player player;
+	
+	private boolean hasFired = false;
 }

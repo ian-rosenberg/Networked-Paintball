@@ -402,12 +402,6 @@ public class ClientUI extends JFrame implements Event {
 	}
 
 	@Override
-	public void onSyncWeaponFire(int team, Point position, Point direction) {
-		// TODO Auto-generated method stub
-		// no need to sync this for ClientUI
-	}
-
-	@Override
 	public void onChangeTeam(int number) {
 		repaint();
 	}
@@ -464,4 +458,16 @@ public class ClientUI extends JFrame implements Event {
 		revalidate();
 	}
 
+	@Override
+	public void onSetBulletPosition(int teamId, int bulletId, int dirX, Point newPos) {
+		// TODO Auto-generated method stub
+		//Nothing to do here, 
+		
+	}
+
+	@Override
+	public void onRemoveBullet(int id) {
+		// TODO Auto-generated method stub
+		
+	}
 }

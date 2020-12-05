@@ -1,5 +1,6 @@
 package core;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -19,6 +20,7 @@ public abstract class GameObject implements Serializable {
 	protected String name = "";
 	protected boolean isActive = true;
 	protected int id = -1;
+	protected Color color = Color.WHITE;
 
 	/**
 	 * Set the index of the corresponding team to place the player into. There is no
@@ -28,12 +30,18 @@ public abstract class GameObject implements Serializable {
 	 * @param teamNumber
 	 */
 	public void setTeam(int teamNumber) {
-		if (teamNumber < 1) {
-			System.out.println("Invalid team number!");
-			return;
+		// Only two teams. Splatoon colors, heh
+		switch (teamNumber) {
+		case 1:
+			color = new Color(255, 105, 180);// hot pink
+			break;
+		case 2:
+			color = Color.green;
+			break;
+		default:
+			break;
 		}
 
-		System.out.println("Assigned player " + id + " to team " + team);
 		team = teamNumber;
 	}
 
@@ -95,8 +103,6 @@ public abstract class GameObject implements Serializable {
 		}
 
 		id = ID;
-
-		System.out.println("Assigned player " + id);
 	}
 
 	public boolean isActive() {
@@ -156,11 +162,11 @@ public abstract class GameObject implements Serializable {
 	 * 
 	 * @param position
 	 */
-	public void setPosition(Point position) {
-		previousPosition.x = position.x;
-		previousPosition.y = position.y;
-		this.position.x = position.x;
-		this.position.y = position.y;
+	public void setPosition(Point pos) {
+		previousPosition.x = this.position.x;
+		previousPosition.y = this.position.y;
+		this.position.x = pos.x;
+		this.position.y = pos.y;
 	}
 
 	public Point getPosition() {

@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 
 import server.GameState;
 import server.Payload;
+import server.Payload.ProjectileInfo;
 import server.PayloadType;
 
 public enum SocketClient {
@@ -226,7 +227,27 @@ public enum SocketClient {
 				e.onSetGameBoundary(point.x, point.y);
 			}
 		}
-	}	
+	}
+	
+	private void setBulletPosition(ProjectileInfo pInfo, Point newPos) {
+		Iterator<Event> iter = events.iterator();
+		while (iter.hasNext()) {
+			Event e = iter.next();
+			if (e != null) {
+				e.onSetBulletPosition(pInfo.getTeamId(), pInfo.getPlayerId(), pInfo.getDirX(), newPos);
+			}
+		}
+	}
+
+	private void removeBullet(int id) {
+		Iterator<Event> iter = events.iterator();
+		while (iter.hasNext()) {
+			Event e = iter.next();
+			if (e != null) {
+				e.onRemoveBullet(id);
+			}
+		}
+	}
 
 	/***
 	 * Determine any special logic for different PayloadTypes
@@ -275,6 +296,12 @@ public enum SocketClient {
 			break;
 		case SYNC_DIMENSIONS:
 			setGameBoundary(p.getPoint());
+			break;
+		case SYNC_BULLET:
+			setBulletPosition(p.getProjectileInfo(), p.getPoint());
+			break;
+		case DESTROY_BULLET:
+			removeBullet(p.getNumber());
 			break;
 		default:
 			log.log(Level.WARNING, "unhandled payload on client" + p);
@@ -357,15 +384,8 @@ public enum SocketClient {
 		Payload p = new Payload();
 		p.setPayloadType(PayloadType.SHOOT);
 		Point direction = new Point(clickPos.x - playerPos.x, clickPos.y - playerPos.y);
-		double length = Math.hypot(direction.x, direction.y);
-		if (length == 0.0) {
-			return;
-		}
 		
-		double dirX = direction.x/length;
-		double dirY = direction.y/length;
-		
-		p.setProjectileInfo(team, playerId, dirX, dirY);
+		p.setProjectileInfo(team, playerId, direction.x);
 				
 		sendPayload(p);
 	}

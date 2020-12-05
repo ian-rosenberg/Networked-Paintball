@@ -22,6 +22,7 @@ import javax.swing.InputMap;
 import javax.swing.KeyStroke;
 
 import core.BaseGamePanel;
+import core.Projectile;
 import server.GameState;
 
 public class GamePanel extends BaseGamePanel implements Event {
@@ -31,6 +32,7 @@ public class GamePanel extends BaseGamePanel implements Event {
 	 */
 	private static final long serialVersionUID = -1121202275148798015L;
 	List<Player> players;
+	List<Projectile> localBullets;
 	Player myPlayer;
 	String playerUsername;// caching it so we don't lose it when room is wiped
 	private final static Logger log = Logger.getLogger(GamePanel.class.getName());
@@ -116,6 +118,7 @@ public class GamePanel extends BaseGamePanel implements Event {
 	@Override
 	public void awake() {
 		players = new ArrayList<Player>();
+		localBullets = new ArrayList<Projectile>();
 		GamePanel gp = this;
 		// fix the loss of focus when typing in chat
 		addMouseListener(new MouseAdapter() {
@@ -128,7 +131,6 @@ public class GamePanel extends BaseGamePanel implements Event {
 			
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				log.log(Level.INFO, "Mouse coords click ("+e.getX()+","+e.getY()+")");
 				Point clickPosition = new Point(e.getX(),e.getY());
 				
 				SocketClient.INSTANCE.sendShootBullet(myPlayer.getTeam(), myPlayer.getId(), clickPosition, 
@@ -147,6 +149,7 @@ public class GamePanel extends BaseGamePanel implements Event {
 	public void update() {
 		applyControls();
 		localMovePlayers();
+		localMoveProjectiles();
 	}
 
 	/**
@@ -196,6 +199,20 @@ public class GamePanel extends BaseGamePanel implements Event {
 		}
 	}
 
+	/**
+	 * This is just an estimate/hint until we receive a position sync from the
+	 * server
+	 */
+	private void localMoveProjectiles() {
+		Iterator<Projectile> iter = localBullets.iterator();
+		while (iter.hasNext()) {
+			Projectile p = iter.next();
+			if (p != null) {
+				p.move();
+			}
+		}
+	}
+	
 	@Override
 	public void lateUpdate() {
 		// stuff that should happen at a slightly different time than stuff in normal
@@ -209,6 +226,7 @@ public class GamePanel extends BaseGamePanel implements Event {
 		drawBorder(g);
 		((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		drawPlayers(g);
+		drawProjectiles(g);
 		drawText(g);
 	}
 
@@ -224,6 +242,16 @@ public class GamePanel extends BaseGamePanel implements Event {
 		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
 			Player p = iter.next();
+			if (p != null) {
+				p.draw(g);
+			}
+		}
+	}	
+	
+	private synchronized void drawProjectiles(Graphics g) {
+		Iterator<Projectile> iter = localBullets.iterator();
+		while (iter.hasNext()) {
+			Projectile p = iter.next();
 			if (p != null) {
 				p.draw(g);
 			}
@@ -322,12 +350,6 @@ public class GamePanel extends BaseGamePanel implements Event {
 	}
 
 	@Override
-	public void onSyncWeaponFire(int team, Point position, Point direction) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
 	public void onGetRoom(String roomname) {
 		// TODO Auto-generated method stub
 
@@ -396,5 +418,38 @@ public class GamePanel extends BaseGamePanel implements Event {
 	@Override
 	public void onSetGameBoundary(int x, int y) {
 		boundary = new Dimension(x, y);
+	}
+
+	@Override
+	public void onSetBulletPosition(int teamId, int bulletId, int xDir, Point newPos) {
+		boolean newBullet = true;
+		Iterator<Projectile> pIter = localBullets.iterator();
+		while(pIter.hasNext()) {
+			Projectile proj = pIter.next();
+			if(proj.getId() == bulletId) {
+				proj.setPosition(newPos);
+				proj.setDirX(xDir);
+				proj.setTeam(teamId);
+				newBullet = false;
+			}
+		}
+		
+		if(newBullet) {
+			Projectile newProjectile = new Projectile(teamId, bulletId, xDir, newPos);
+		
+			localBullets.add(newProjectile);
+		}
+		
+	}
+
+	@Override
+	public void onRemoveBullet(int id) {
+		Iterator<Projectile> pIter = localBullets.iterator();
+		while(pIter.hasNext()) {
+			Projectile proj = pIter.next();
+			if(proj.getId() == id) {
+				pIter.remove();
+			}
+		}
 	}
 }

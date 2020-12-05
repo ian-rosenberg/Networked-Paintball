@@ -19,5 +19,7 @@ public enum PayloadType {
 	GAME_STARTED, 
 	SET_ACTIVITY, 
 	GAME_STATE,
-	TIMER,
+	TIMER, 
+	SYNC_BULLET,
+	DESTROY_BULLET,
 }
