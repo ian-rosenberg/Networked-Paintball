@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import server.Payload.ProjectileInfo;
+
 public class ServerThread extends Thread {
 	private Socket client;
 	private ObjectInputStream in;// from client
@@ -239,6 +241,10 @@ public class ServerThread extends Thread {
 					}
 				}
 			}
+			break;
+		case SHOOT:
+			Room toShootIn = 
+			getSyncBullet(p.getProjectileInfo());
 			break;
 		default:
 			log.log(Level.INFO, "Unhandled payload on server: " + p);

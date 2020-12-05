@@ -23,7 +23,6 @@ import javax.swing.KeyStroke;
 
 import core.BaseGamePanel;
 import server.GameState;
-import server.Room;
 
 public class GamePanel extends BaseGamePanel implements Event {
 
@@ -124,6 +123,17 @@ public class GamePanel extends BaseGamePanel implements Event {
 			@Override
 			public void mousePressed(MouseEvent e) {
 				gp.getRootPane().grabFocus();
+			}
+			
+			
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				log.log(Level.INFO, "Mouse coords click ("+e.getX()+","+e.getY()+")");
+				Point clickPosition = new Point(e.getX(),e.getY());
+				
+				SocketClient.INSTANCE.sendShootBullet(myPlayer.getTeam(), myPlayer.getId(), clickPosition, 
+						new Point(myPlayer.getPosition().x + myPlayer.getSize().x/2,
+								myPlayer.getPosition().y + myPlayer.getSize().y/2));
 			}
 		});
 	}

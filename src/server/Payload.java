@@ -40,7 +40,60 @@ public class Payload implements Serializable {
 		playerInfo.teamId = teamID;
 		playerInfo.playerId = playerID;
 	}
+	
+	public class ProjectileInfo implements Serializable{
+		private static final long serialVersionUID = 1L;
+		private int teamId = 0;
+		private int playerId = -1;
+		private double dirX = 0.0;
+		private double dirY = -1.0;
+		
+		public void setTeamId(int id) {
+			teamId = id;
+		}
+		
+		public int getTeamId() {
+			return teamId;
+		}
 
+		public double getDirY() {
+			return dirY;
+		}
+
+		public void setDirY(double dirY) {
+			this.dirY = dirY;
+		}
+
+		public double getDirX() {
+			return dirX;
+		}
+
+		public void setDirX(double dirX) {
+			this.dirX = dirX;
+		}
+
+		public int getPlayerId() {
+			return playerId;
+		}
+
+		public void setPlayerId(int playerId) {
+			this.playerId = playerId;
+		}
+	}
+	
+	public ProjectileInfo getProjectileInfo() {
+		return projectilePayload;
+	}
+	
+	public void setProjectileInfo(int team, int ownerId, double dX, double dY) {
+		projectilePayload.setTeamId(team);
+		projectilePayload.setDirX(dX);
+		projectilePayload.setDirX(dY);
+		projectilePayload.setPlayerId(ownerId);
+	}
+
+	private ProjectileInfo projectilePayload = new ProjectileInfo();
+	
 	/**
 	 * baeldung.com/java-serial-version-uid
 	 */

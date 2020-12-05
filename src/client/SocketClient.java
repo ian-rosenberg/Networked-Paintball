@@ -350,6 +350,25 @@ public enum SocketClient {
 		p.setMessage(query);
 		sendPayload(p);
 	}
+	
+
+
+	protected void sendShootBullet(int team, int playerId, Point clickPos, Point playerPos) {
+		Payload p = new Payload();
+		p.setPayloadType(PayloadType.SHOOT);
+		Point direction = new Point(clickPos.x - playerPos.x, clickPos.y - playerPos.y);
+		double length = Math.hypot(direction.x, direction.y);
+		if (length == 0.0) {
+			return;
+		}
+		
+		double dirX = direction.x/length;
+		double dirY = direction.y/length;
+		
+		p.setProjectileInfo(team, playerId, dirX, dirY);
+				
+		sendPayload(p);
+	}
 
 	/**
 	 * Sends desired to change direction to server

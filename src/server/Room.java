@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 
 import client.Player;
 import core.BaseGamePanel;
+import core.Projectile;
 
 public class Room extends BaseGamePanel implements AutoCloseable {
 	private static SocketServer server;// used to refer to accessible server functions
@@ -31,6 +32,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	private final static String JOIN_ROOM = "joinroom";
 	private final static String READY = "ready";
 	private List<ClientPlayer> clients = new ArrayList<ClientPlayer>();
+	private List<Projectile> projectiles = new ArrayList<Projectile>();
 	private static Dimension gameAreaSize = new Dimension(1280, 720);
 
 	private long timeLeft = ROUND_TIME;
