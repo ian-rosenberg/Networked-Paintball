@@ -586,6 +586,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 					p.move();
 					if(p.passedScreenBounds(gameAreaSize)) {
 						sendRemoveProjectile(p.getId());
+						getClientPlayerById(p.getId()).setHasFired(false);
 						break;
 					}
 					else {
@@ -601,10 +602,45 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			if (p != null) {
 				// have the server-side player calc their potential new position
 				p.player.move();
+				int passedBounds = p.player.passedScreenBounds(gameAreaSize);
+				
+				switch(passedBounds) {
+					case 1: p.player.setPosition(new Point(p.player.getPosition().x, p.player.getSize().y));//North
+						break;
+					
+					case 2: p.player.setPosition(new Point(gameAreaSize.width - p.player.getSize().x, p.player.getPosition().y));//East
+						break;	
+					
+					case 3: p.player.setPosition(new Point(p.player.getPosition().x, gameAreaSize.height - p.player.getSize().y));//South
+						break;
+					
+					case 4: p.player.setPosition(new Point(p.player.getSize().x, p.player.getPosition().y));//West
+						break;
+				}
+				
+				if(passedBounds > 0) {
+					sendPositionSync(p.client, p.player.getPosition());
+				}
+				
+				
 				// determine if we should sync this player's position to all other players
 				checkPositionSync(p);
 			}
 		}
+	}
+	
+	private ClientPlayer getClientPlayerById(int playerId) {
+		Iterator<ClientPlayer> iter = clients.iterator();
+		while (iter.hasNext()) {
+			ClientPlayer p = iter.next();
+			if (p != null) {
+				if(p.player.getId() == playerId) {
+					return p;
+				}
+			}	
+		}
+		
+		return null;
 	}
 
 	private void broadcastTimeLeft() {

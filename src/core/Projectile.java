@@ -20,7 +20,7 @@ public class Projectile extends GameObject {
 		setPosition(new Point(player));
 		this.setActive(true);
 		this.setTeam(tId);
-		this.setSpeed(10, 0);
+		this.setSpeed(15, 0);
 	}
 	
 	public boolean passedScreenBounds(Dimension bounds) {

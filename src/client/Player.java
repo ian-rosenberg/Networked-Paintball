@@ -1,6 +1,7 @@
 package client;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -65,5 +66,25 @@ public class Player extends GameObject implements Serializable {
 
 	public void setColor(Color teamColor) {
 		color = teamColor;
+	}
+	
+	public int passedScreenBounds(Dimension bounds) {
+		if(position.getX() < 5) {		
+			return 4; 
+		}
+		
+		if(position.getX() > bounds.getWidth()-10) {
+			return 2;
+		}
+		
+		if(position.getY() < 5) {		
+			return 1; 
+		}
+		
+		if(position.getY() > bounds.getHeight()-5) {
+			return 3;
+		}
+		
+		return -1;
 	}
 }

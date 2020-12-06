@@ -1,9 +1,5 @@
-Working on projectile firing
-	Need to sync projectile position to all clients
-	And sync drawing projectiles on game panel
-
 When the bullet goes offscreen
-	remove it and destroy
-	set player able to fire again
+	remove it and destroy - DONE
+	set player able to fire again - DONE
 
 Lock players to game area
