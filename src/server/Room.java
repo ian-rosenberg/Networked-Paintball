@@ -450,7 +450,6 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		Iterator<ClientPlayer> iter = clients.iterator();
 		while (iter.hasNext()) {
 			ClientPlayer client = iter.next();
-			client.player.setPosition(pos);
 			boolean messageSent = client.client.sendPosition(sender.getClientName(), pos);
 			if (!messageSent) {
 				iter.remove();
@@ -526,21 +525,6 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	long frame = 0;
 
 	void checkPositionSync(ClientPlayer cp) {
-		// determine the maximum syncing needed
-		// you do NOT need it every frame, if you do it could cause network congestion
-		// and
-		// lots of bandwidth that doesn't need to be utilized
-		if (frame % 120 == 0) {// sync every 120 frames (i.e., if 60 fps that's every 2 seconds)
-			// check if it's worth sycning the position
-			// again this is to save unnecessary data transfer
-			if (cp.player.changedPosition()) {
-				sendPositionSync(cp.client, cp.player.getPosition());
-			}
-		}
-
-	}	
-	
-	void checkProjectilePositionSync(ClientPlayer cp) {
 		// determine the maximum syncing needed
 		// you do NOT need it every frame, if you do it could cause network congestion
 		// and
