@@ -229,12 +229,12 @@ public enum SocketClient {
 		}
 	}
 	
-	private void setBulletPosition(ProjectileInfo pInfo, Point newPos) {
+	private void setBulletPosition(ProjectileInfo pInfo) {
 		Iterator<Event> iter = events.iterator();
 		while (iter.hasNext()) {
 			Event e = iter.next();
 			if (e != null) {
-				e.onSetBulletPosition(pInfo.getTeamId(), pInfo.getPlayerId(), pInfo.getDirX(), newPos);
+				e.onSetBulletPosition(pInfo.getTeamId(), pInfo.getPlayerId(), pInfo.getDirX(), pInfo.getPosition());
 			}
 		}
 	}
@@ -318,7 +318,7 @@ public enum SocketClient {
 			setGameBoundary(p.getPoint());
 			break;
 		case SYNC_BULLET:
-			setBulletPosition(p.getProjectileInfo(), p.getPoint());
+			setBulletPosition(p.getProjectileInfo());
 			break;
 		case DESTROY_BULLET:
 			removeBullet(p.getNumber());
