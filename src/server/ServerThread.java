@@ -169,8 +169,7 @@ public class ServerThread extends Thread {
 	protected boolean sendSyncProjectile(Projectile proj) {
 		Payload payload = new Payload();
 		payload.setPayloadType(PayloadType.SYNC_BULLET);
-		payload.setClientProjectileInfo(proj.getTeam(), proj.getId(), proj.getDirX(), proj.getPosition());
-		payload.setPoint(proj.getPosition());
+		payload.setProjectileInfo(proj.getTeam(), proj.getId(), proj.getDirX(), proj.getPosition());
 		return sendPayload(payload);
 	}
 
@@ -186,6 +185,20 @@ public class ServerThread extends Thread {
 		Payload payload = new Payload();
 		payload.setPayloadType(PayloadType.DESTROY_BULLET);
 		payload.setNumber(id);
+		return sendPayload(payload);
+	}
+	
+
+	protected boolean sendDecrementHP() {
+		Payload payload = new Payload();
+		payload.setPayloadType(PayloadType.DECREMENT_HP);
+		return sendPayload(payload);
+	}
+	
+	protected boolean sendResetHP(int hp) {
+		Payload payload = new Payload();
+		payload.setPayloadType(PayloadType.RESET_HP);
+		payload.setNumber(hp);
 		return sendPayload(payload);
 	}
 		

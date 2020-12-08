@@ -248,6 +248,26 @@ public enum SocketClient {
 			}
 		}
 	}
+	
+	private void decrementHP(int id) {
+		Iterator<Event> iter = events.iterator();
+		while (iter.hasNext()) {
+			Event e = iter.next();
+			if (e != null) {
+				e.onDecrementHP(id);
+			}
+		}
+	}
+	
+	private void resetHP(int hp) {
+		Iterator<Event> iter = events.iterator();
+		while (iter.hasNext()) {
+			Event e = iter.next();
+			if (e != null) {
+				e.onResetHP(hp);
+			}
+		}
+	}
 
 	/***
 	 * Determine any special logic for different PayloadTypes
@@ -302,6 +322,12 @@ public enum SocketClient {
 			break;
 		case DESTROY_BULLET:
 			removeBullet(p.getNumber());
+			break;
+		case DECREMENT_HP:
+			decrementHP(p.getNumber());
+			break;
+		case RESET_HP:
+			resetHP(p.getNumber());
 			break;
 		default:
 			log.log(Level.WARNING, "unhandled payload on client" + p);
@@ -380,12 +406,12 @@ public enum SocketClient {
 	
 
 
-	protected void sendShootBullet(int team, int playerId, Point clickPos, Point playerPos) {
+	protected void sendShootBullet(int team, int playerId, Point playerPos) {
 		Payload p = new Payload();
 		p.setPayloadType(PayloadType.SHOOT);
-		Point direction = new Point(clickPos.x - playerPos.x, clickPos.y - playerPos.y);
+		int dirx = team == 1 ? -1 : 1;
 		
-		p.setProjectileInfo(team, playerId, direction.x);
+		p.setProjectileInfo(team, playerId, dirx, playerPos);
 				
 		sendPayload(p);
 	}

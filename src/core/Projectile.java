@@ -5,12 +5,14 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Point;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import server.ClientPlayer;
 
 public class Projectile extends GameObject {
-	private int radius = 2;
+	private int radius = 5;
 	private int dirX = 0;
 	
 	public Projectile(int tId, int projId, int xDir, Point player){
@@ -31,8 +33,19 @@ public class Projectile extends GameObject {
 		return false;
 	}
 
-	public void getCollidingPlayers(List<ClientPlayer> clientPlayers) {
-
+	public List<Integer> getCollidingPlayers(List<ClientPlayer> clientPlayers) {
+		List<Integer> targetIds = new ArrayList<Integer>();
+		
+		Iterator<ClientPlayer> cpIter = clientPlayers.iterator();
+		while(cpIter.hasNext()) {
+			ClientPlayer cp = cpIter.next();
+			
+			if(Math.hypot(position.x - cp.player.position.x, position.y - cp.player.position.y) < radius) {
+				targetIds.add(cp.player.getId());
+			}
+		}
+		
+		return targetIds;
 	}
 	
 	@Override
@@ -41,7 +54,7 @@ public class Projectile extends GameObject {
 		// super
 		if (super.draw(g)) {
 			g.setColor(color);
-			g.fillOval(position.x, position.y, size.width, size.height);
+			g.fillOval(position.x, position.y, radius, radius);
 		}
 		return true;
 	}

@@ -127,16 +127,6 @@ public class GamePanel extends BaseGamePanel implements Event {
 			public void mousePressed(MouseEvent e) {
 				gp.getRootPane().grabFocus();
 			}
-			
-			
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				Point clickPosition = new Point(e.getX(),e.getY());
-				
-				SocketClient.INSTANCE.sendShootBullet(myPlayer.getTeam(), myPlayer.getId(), clickPosition, 
-						new Point(myPlayer.getPosition().x + myPlayer.getSize().x/2,
-								myPlayer.getPosition().y + myPlayer.getSize().y/2));
-			}
 		});
 	}
 
@@ -174,6 +164,11 @@ public class GamePanel extends BaseGamePanel implements Event {
 			}
 			if (!KeyStates.A && !KeyStates.D) {
 				x = 0;
+			}
+			if(KeyStates.FIRE && gameState == GameState.GAME) {
+				SocketClient.INSTANCE.sendShootBullet(myPlayer.getTeam(), myPlayer.getId(), 
+						new Point(myPlayer.getPosition().x + myPlayer.getSize().x/2,
+								myPlayer.getPosition().y + myPlayer.getSize().y/2));
 			}
 			boolean changed = myPlayer.setDirection(x, y);
 			if (changed) {
@@ -450,6 +445,23 @@ public class GamePanel extends BaseGamePanel implements Event {
 			if(proj.getId() == id) {
 				pIter.remove();
 			}
+		}
+	}
+
+	@Override
+	public void onDecrementHP(int id) {
+		for (Player player : players) {
+			if(player.getId() == id)
+			{
+				player.decrementHP();
+			}
+		}
+	}
+
+	@Override
+	public void onResetHP(int hp) {
+		for (Player player : players) {
+			player.resetHP(hp);
 		}
 	}
 }

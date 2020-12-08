@@ -568,16 +568,27 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 				
 				if(p != null && p.isActive()) {
 					p.move();
+					
+					List<Integer> targetIds = p.getCollidingPlayers(clients);
 					if(p.passedScreenBounds(gameAreaSize)) {
-						sendRemoveProjectile(p.getId());
 						getClientPlayerById(p.getId()).setHasFired(false);
+						sendRemoveProjectile(p.getId());
 						break;
+					}
+					else if(targetIds.size() > 0) {
+						for(int id : targetIds) {
+							ClientPlayer cp = getClientPlayerById(id);
+							cp.player.decrementHP();
+							cp.client.sendDecrementHP();
+						}
+
+						getClientPlayerById(p.getId()).setHasFired(false);
+						sendRemoveProjectile(p.getId());
 					}
 					else {
 						sendSyncProjectile(p);
 					}
 				}
-				//TODO: do collision checking
 			}
 		}
 		Iterator<ClientPlayer> iter = clients.iterator();
@@ -712,23 +723,15 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			ClientPlayer cp = iter.next();
 			
 			if(cp.player.getId() == projectileInfo.getPlayerId() && !cp.hasFired()) {
-				cp.setHasFired(true);
-				int dirX = 0;
+				cp.setHasFired(true);	
 				
-				if(projectileInfo.getTeamId() == 1) {
-					dirX = 1;
-				}
-				else {
-					dirX = -1;
-				}
+				Projectile newProj = new Projectile(projectileInfo.getTeamId(),
+						projectileInfo.getPlayerId(),
+						projectileInfo.getDirX(),
+						projectileInfo.getPosition());
 				
+				projectiles.add(newProj);
 				
-				Projectile newProj = new Projectile(cp.player.getTeam(),
-						projectiles.size(),
-						dirX,
-						cp.player.getPosition());
-				
-				projectiles.add(newProj);		
 			}
 		}
 	}
