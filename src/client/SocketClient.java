@@ -406,13 +406,9 @@ public enum SocketClient {
 	
 
 
-	protected void sendShootBullet(int team, int playerId, Point playerPos) {
+	protected void sendShootBullet() {
 		Payload p = new Payload();
-		p.setPayloadType(PayloadType.SHOOT);
-		int dirx = team == 1 ? -1 : 1;
-		
-		p.setProjectileInfo(team, playerId, dirx, playerPos);
-				
+		p.setPayloadType(PayloadType.SHOOT);	
 		sendPayload(p);
 	}
 

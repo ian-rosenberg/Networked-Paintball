@@ -271,7 +271,7 @@ public class ServerThread extends Thread {
 			}
 			break;
 		case SHOOT:
-			currentRoom.getSyncBullet(p.getProjectileInfo());
+			currentRoom.getSyncBullet(this);
 			break;
 		default:
 			log.log(Level.INFO, "Unhandled payload on server: " + p);

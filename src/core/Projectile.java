@@ -12,7 +12,7 @@ import java.util.List;
 import server.ClientPlayer;
 
 public class Projectile extends GameObject {
-	private int radius = 5;
+	private int radius = 6;
 	private int dirX = 0;
 	
 	public Projectile(int tId, int projId, int xDir, Point player){

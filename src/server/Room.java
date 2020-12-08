@@ -26,6 +26,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 
 	private final static int TEAM_A = 1;
 	private final static int TEAM_B = 2;
+	private final static int BULLET_RADIUS = 6;
 
 	// Commands
 	private final static String COMMAND_TRIGGER = "/";
@@ -585,9 +586,6 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 						getClientPlayerById(p.getId()).setHasFired(false);
 						sendRemoveProjectile(p.getId());
 					}
-					else {
-						sendSyncProjectile(p);
-					}
 				}
 			}
 		}
@@ -717,21 +715,24 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		return MINUTE_NANO;
 	}
 
-	public void getSyncBullet(ProjectileInfo projectileInfo) {
+	public void getSyncBullet(ServerThread client) {
 		Iterator<ClientPlayer> iter = clients.iterator();
 		while (iter.hasNext()) {
 			ClientPlayer cp = iter.next();
 			
-			if(cp.player.getId() == projectileInfo.getPlayerId() && !cp.hasFired()) {
+			if(cp.client == client && !cp.hasFired()) {
 				cp.setHasFired(true);	
+				int pt = cp.player.getTeam();
+				int xdir = pt == 1 ? -1: 1;
 				
-				Projectile newProj = new Projectile(projectileInfo.getTeamId(),
-						projectileInfo.getPlayerId(),
-						projectileInfo.getDirX(),
-						projectileInfo.getPosition());
+				Projectile newProj = new Projectile(pt,
+						cp.player.getId(),
+						xdir,
+						new Point(cp.player.getPosition().x + BULLET_RADIUS, cp.player.getPosition().y + BULLET_RADIUS));
 				
 				projectiles.add(newProj);
-				
+
+				sendSyncProjectile(newProj);
 			}
 		}
 	}

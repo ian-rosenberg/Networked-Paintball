@@ -166,9 +166,7 @@ public class GamePanel extends BaseGamePanel implements Event {
 				x = 0;
 			}
 			if(KeyStates.FIRE && gameState == GameState.GAME) {
-				SocketClient.INSTANCE.sendShootBullet(myPlayer.getTeam(), myPlayer.getId(), 
-						new Point(myPlayer.getPosition().x + myPlayer.getSize().x/2,
-								myPlayer.getPosition().y + myPlayer.getSize().y/2));
+				SocketClient.INSTANCE.sendShootBullet();
 			}
 			boolean changed = myPlayer.setDirection(x, y);
 			if (changed) {
@@ -422,7 +420,6 @@ public class GamePanel extends BaseGamePanel implements Event {
 		while(pIter.hasNext()) {
 			Projectile proj = pIter.next();
 			if(proj.getId() == bulletId) {
-				proj.setPosition(newPos);
 				proj.setDirX(xDir);
 				proj.setTeam(teamId);
 				newBullet = false;
