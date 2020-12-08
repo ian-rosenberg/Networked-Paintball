@@ -333,6 +333,8 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 					response = message;
 					break;
 				}
+			}else {
+				response = message;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -563,39 +565,39 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			return;
 		}
 		
-		if(projectiles.size()> 0)
-		{
-			Iterator<Projectile> pIter = projectiles.iterator();
-			while (pIter.hasNext()) {
-				Projectile p = pIter.next();
+		Iterator<Projectile> pIter = projectiles.iterator();
+		while (pIter.hasNext()) {
+			Projectile p = pIter.next();
+			
+			if(p != null && p.isActive()) {
+				int projId = p.getId();
 				
-				if(p != null && p.isActive()) {
-					p.move();
-					
-					List<Integer> targetIds = p.getCollidingPlayers(clients);
-					if(p.passedScreenBounds(gameAreaSize)) {
-						getClientPlayerById(p.getId()).setHasFired(false);
-						sendRemoveProjectile(p.getId());
-						break;
+				p.move();
+				
+				List<Integer> targetIds = p.getCollidingPlayers(clients);
+				if(p.passedScreenBounds(gameAreaSize)) {
+					ClientPlayer cp = getClientPlayerById(projId);
+					cp.setHasFired(false);
+					sendRemoveProjectile(projId);
+					break;
+				}
+				else if(targetIds.size() > 0) {
+					for(int id : targetIds) {
+						ClientPlayer cp = getClientPlayerById(id);
+						cp.player.decrementHP();
+						cp.client.sendDecrementHP();
+						log.log(Level.INFO, cp.client.getClientName() + " was hit!");
+						sendMessage(cp.client, cp.client.getClientName() + " was hit!");
 					}
-					else if(targetIds.size() > 0) {
-						int projId = p.getId();
-						for(int id : targetIds) {
-							ClientPlayer cp = getClientPlayerById(id);
-							cp.player.decrementHP();
-							cp.client.sendDecrementHP();
-							log.log(Level.INFO, cp.client.getClientName() + " was hit!");
-							sendMessage(cp.client, cp.client.getClientName() + " was hit!");
-						}
 
-						ClientPlayer cp = getClientPlayerById(projId);
-						cp.setHasFired(false);
-						sendRemoveProjectile(projId);
-						break;
-					}
+					ClientPlayer cp = getClientPlayerById(projId);
+					cp.setHasFired(false);
+					sendRemoveProjectile(projId);
+					break;
 				}
 			}
 		}
+		
 		Iterator<ClientPlayer> iter = clients.iterator();
 		while (iter.hasNext()) {
 			ClientPlayer p = iter.next();

@@ -40,8 +40,8 @@ public class Projectile extends GameObject {
 		while(cpIter.hasNext()) {
 			ClientPlayer cp = cpIter.next();
 			
-			if((position.x - cp.player.position.x)*(position.x - cp.player.position.x)+
-					(position.y - cp.player.position.y) * (position.y - cp.player.position.y) < radius*radius) {
+			if(Math.hypot(position.x - cp.player.position.x, position.y - cp.player.position.y) < radius + cp.player.getSize().x/2 &&
+					cp.player.getTeam() != team) {
 				targetIds.add(cp.player.getId());
 			}
 		}
