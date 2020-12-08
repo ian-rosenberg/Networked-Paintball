@@ -12,7 +12,7 @@ import java.util.List;
 import server.ClientPlayer;
 
 public class Projectile extends GameObject {
-	private int radius = 6;
+	private int radius = 15;
 	private int dirX = 0;
 	
 	public Projectile(int tId, int projId, int xDir, Point player){
@@ -40,7 +40,8 @@ public class Projectile extends GameObject {
 		while(cpIter.hasNext()) {
 			ClientPlayer cp = cpIter.next();
 			
-			if(Math.hypot(position.x - cp.player.position.x, position.y - cp.player.position.y) < radius) {
+			if((position.x - cp.player.position.x)*(position.x - cp.player.position.x)+
+					(position.y - cp.player.position.y) * (position.y - cp.player.position.y) < radius*radius) {
 				targetIds.add(cp.player.getId());
 			}
 		}

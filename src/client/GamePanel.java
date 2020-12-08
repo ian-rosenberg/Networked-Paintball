@@ -165,7 +165,7 @@ public class GamePanel extends BaseGamePanel implements Event {
 			if (!KeyStates.A && !KeyStates.D) {
 				x = 0;
 			}
-			if(KeyStates.FIRE && gameState == GameState.GAME) {
+			if(KeyStates.FIRE) {
 				SocketClient.INSTANCE.sendShootBullet();
 			}
 			boolean changed = myPlayer.setDirection(x, y);
@@ -458,7 +458,7 @@ public class GamePanel extends BaseGamePanel implements Event {
 	@Override
 	public void onResetHP(int hp) {
 		for (Player player : players) {
-			player.resetHP(hp);
+			player.setHP(hp);
 		}
 	}
 }

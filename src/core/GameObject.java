@@ -21,6 +21,7 @@ public abstract class GameObject implements Serializable {
 	protected boolean isActive = true;
 	protected int id = -1;
 	protected Color color = Color.WHITE;
+	private int HP = -1;
 
 	/**
 	 * Set the index of the corresponding team to place the player into. There is no
@@ -193,5 +194,13 @@ public abstract class GameObject implements Serializable {
 			return false;
 		}
 		return true;
+	}
+
+	public int getHP() {
+		return HP;
+	}
+
+	public void setHP(int hP) {
+		HP = hP;
 	}
 }

@@ -19,7 +19,6 @@ public class Player extends GameObject implements Serializable {
 	private Point nameOffset = new Point(0, -5);
 	private boolean isReady = false;
 	private Point lineEnd = new Point(position.x + (size.width/2), position.y + (size.height/2));
-	private int HP = -1;
 
 	public void setDirectionLine(Point dir) {
 		lineEnd.x = dir.x;
@@ -46,7 +45,7 @@ public class Player extends GameObject implements Serializable {
 			g.fillOval(position.x, position.y, size.width, size.height);
 			g.setColor(Color.WHITE);
 			g.setFont(new Font("Monospaced", Font.PLAIN, 12));
-			g.drawString("Name: " + name, position.x + nameOffset.x, position.y + nameOffset.y);
+			g.drawString("Name: " + name + " HP: " + getHP(), position.x + nameOffset.x, position.y + nameOffset.y);
 			if(lineEnd.x != position.x || lineEnd.y != position.y) {
 				g.drawLine(position.x + (size.width/2), position.y + (size.height/2), position.x + (size.width/2) + (lineEnd.x * LINE_FACTOR), position.y + (size.height/2) + (lineEnd.y * LINE_FACTOR));
 			}
@@ -89,14 +88,6 @@ public class Player extends GameObject implements Serializable {
 	}
 
 	public void decrementHP() {
-		HP -= 1;
-	}
-	
-	public int getHP() {
-		return HP;
-	}
-	
-	public void resetHP(int val) {
-		HP = val;
+		setHP(getHP() - 1);
 	}
 }
