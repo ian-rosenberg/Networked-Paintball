@@ -475,15 +475,8 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		Iterator<ClientPlayer> iter = clients.iterator();
 		while (iter.hasNext()) {
 			ClientPlayer client = iter.next();
-			Iterator<Projectile> pIter = projectiles.iterator();
-			while(pIter.hasNext()) {
-				Projectile proj = pIter.next();
-				
-				if(proj.getId() == id) {
-					client.client.syncRemoveProjectile(proj.getId());
-					pIter.remove();
-				}
-			}
+			
+			client.client.syncRemoveProjectile(id);
 		}
 	}
 
@@ -647,19 +640,11 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	
 
 
-	private void broadcastHP(int id, int hp) {
-		if(id != -1) {
-			ClientPlayer cp = getClientPlayerById(id);
-			cp.player.setHP(hp);
-			cp.client.sendHP(id, hp);
-		}
-		else {
-			Iterator<ClientPlayer> iter = clients.iterator();
-			while (iter.hasNext()) {
-				ClientPlayer c = iter.next();
-				c.player.setHP(hp);
-				c.client.sendHP(id, hp);
-			}
+	private void broadcastHP(int id, int hp) {	
+		Iterator<ClientPlayer> iter = clients.iterator();
+		while (iter.hasNext()) {
+			ClientPlayer c = iter.next();
+			c.client.sendHP(id, hp);
 		}
 	}
 
