@@ -650,12 +650,14 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	private void broadcastHP(int id, int hp) {
 		if(id != -1) {
 			ClientPlayer cp = getClientPlayerById(id);
+			cp.player.setHP(hp);
 			cp.client.sendHP(id, hp);
 		}
 		else {
 			Iterator<ClientPlayer> iter = clients.iterator();
 			while (iter.hasNext()) {
 				ClientPlayer c = iter.next();
+				c.player.setHP(hp);
 				c.client.sendHP(id, hp);
 			}
 		}

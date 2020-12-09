@@ -4,7 +4,7 @@ import java.awt.Point;
 import java.io.Serializable;
 
 public class Payload implements Serializable {
-
+	
 	public class PlayerInfo implements Serializable {
 		/**
 		 * 
@@ -12,6 +12,7 @@ public class Payload implements Serializable {
 		private static final long serialVersionUID = -485567639439554589L;
 		private int teamId = 0;
 		private int playerId;
+		private int hp = 0;
 
 		public void setTeamId(int id) {
 			teamId = id;

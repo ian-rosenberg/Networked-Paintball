@@ -35,6 +35,7 @@ public class GamePanel extends BaseGamePanel implements Event {
 	List<Projectile> localBullets;
 	Player myPlayer;
 	String playerUsername;// caching it so we don't lose it when room is wiped
+	private boolean canFire = true;
 	private final static Logger log = Logger.getLogger(GamePanel.class.getName());
 	private final static long ROUND_TIME = TimeUnit.MINUTES.toNanos(5);// Round time is 5 min in nanoseconds
 	public final static long MINUTE = TimeUnit.MINUTES.toNanos(1);// 1 second in nanoseconds, sources say this is more accurate than ms
@@ -165,8 +166,9 @@ public class GamePanel extends BaseGamePanel implements Event {
 			if (!KeyStates.A && !KeyStates.D) {
 				x = 0;
 			}
-			if(KeyStates.FIRE) {
+			if(KeyStates.FIRE && canFire ) {
 				SocketClient.INSTANCE.sendShootBullet();
+				canFire = false;
 			}
 			boolean changed = myPlayer.setDirection(x, y);
 			if (changed) {
@@ -442,6 +444,9 @@ public class GamePanel extends BaseGamePanel implements Event {
 		while(pIter.hasNext()) {
 			Projectile proj = pIter.next();
 			if(proj.getId() == id) {
+				if(proj.getId() == myPlayer.getId()) {
+					canFire = true;
+				}
 				pIter.remove();
 				return;
 			}
@@ -453,14 +458,12 @@ public class GamePanel extends BaseGamePanel implements Event {
 		if(idHP.x == -1) {
 			for (Player player : players) {
 				player.setHP(idHP.y);
-				repaint();
 			}
 		}else{
 			for (Player player : players) {
 				if(player.getId() == idHP.x)
 				{
 					player.setHP(idHP.y);
-					repaint();
 					return;
 				}
 			}
