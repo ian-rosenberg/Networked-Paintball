@@ -26,6 +26,8 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 
 	private final static int TEAM_A = 1;
 	private final static int TEAM_B = 2;
+	private final static int BULLET_RADIUS = 15;
+	private final int MAX_HP = 3;
 
 	// Commands
 	private final static String COMMAND_TRIGGER = "/";
@@ -331,6 +333,8 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 					response = message;
 					break;
 				}
+			}else {
+				response = message;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -364,9 +368,10 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			// start
 			System.out.println("Everyone's ready, let's do this!");
 			state = GameState.GAME;
+			broadcastHP(-1, MAX_HP);
+			broadcastSetPlayersActive();
 			broadcastGameState();
 			currentNS = System.nanoTime();
-			broadcastSetPlayersActive();
 			prevNS = currentNS;
 			log.log(Level.INFO, "Game has begun in room " + name);
 		}
@@ -470,15 +475,8 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		Iterator<ClientPlayer> iter = clients.iterator();
 		while (iter.hasNext()) {
 			ClientPlayer client = iter.next();
-			Iterator<Projectile> pIter = projectiles.iterator();
-			while(pIter.hasNext()) {
-				Projectile proj = pIter.next();
-				
-				if(proj.getId() == id) {
-					client.client.syncRemoveProjectile(proj.getId());
-					pIter.remove();
-				}
-			}
+			
+			client.client.syncRemoveProjectile(id);
 		}
 	}
 
@@ -538,7 +536,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		}
 
 	}
-
+	//TODO fix update
 	@Override
 	public void update() {
 		if (state != GameState.GAME)
@@ -560,30 +558,43 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			return;
 		}
 		
-		if(projectiles.size()> 0)
-		{
-			Iterator<Projectile> pIter = projectiles.iterator();
-			while (pIter.hasNext()) {
-				Projectile p = pIter.next();
+		Iterator<Projectile> pIter = projectiles.iterator();
+		while (pIter.hasNext()) {
+			Projectile p = pIter.next();
+			
+			if(p != null && p.isActive()) {
+				int projId = p.getId();
 				
-				if(p != null && p.isActive()) {
-					p.move();
-					if(p.passedScreenBounds(gameAreaSize)) {
-						sendRemoveProjectile(p.getId());
-						getClientPlayerById(p.getId()).setHasFired(false);
-						break;
-					}
-					else {
-						sendSyncProjectile(p);
-					}
+				p.move();
+				
+				List<Integer> targetIds = p.getCollidingPlayers(clients);
+				if(p.passedScreenBounds(gameAreaSize)) {
+					ClientPlayer cp = getClientPlayerById(projId);
+					cp.setHasFired(false);
+					sendRemoveProjectile(projId);
+					pIter.remove();
 				}
-				//TODO: do collision checking
+				else if(targetIds.size() > 0) {
+					for(int id : targetIds) {
+						ClientPlayer cp = getClientPlayerById(id);
+						cp.player.setHP(cp.player.getHP()-1);
+						broadcastHP(cp.player.getId(), cp.player.getHP());
+						log.log(Level.INFO, cp.client.getClientName() + " was hit!");
+						sendMessage(cp.client, cp.client.getClientName() + " was hit!");
+					}
+
+					ClientPlayer cp = getClientPlayerById(projId);
+					cp.setHasFired(false);
+					sendRemoveProjectile(projId);
+					pIter.remove();
+				}
 			}
 		}
+		
 		Iterator<ClientPlayer> iter = clients.iterator();
 		while (iter.hasNext()) {
 			ClientPlayer p = iter.next();
-			if (p != null) {
+			if (p != null && p.player.isActive()) {
 				// have the server-side player calc their potential new position
 				p.player.move();
 				int passedBounds = p.player.passedScreenBounds(gameAreaSize);
@@ -625,6 +636,16 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		}
 		
 		return null;
+	}
+	
+
+
+	private void broadcastHP(int id, int hp) {	
+		Iterator<ClientPlayer> iter = clients.iterator();
+		while (iter.hasNext()) {
+			ClientPlayer c = iter.next();
+			c.client.sendHP(id, hp);
+		}
 	}
 
 	private void broadcastTimeLeft() {
@@ -706,29 +727,24 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		return MINUTE_NANO;
 	}
 
-	public void getSyncBullet(ProjectileInfo projectileInfo) {
+	public void getSyncBullet(ServerThread client) {
 		Iterator<ClientPlayer> iter = clients.iterator();
 		while (iter.hasNext()) {
 			ClientPlayer cp = iter.next();
 			
-			if(cp.player.getId() == projectileInfo.getPlayerId() && !cp.hasFired()) {
-				cp.setHasFired(true);
-				int dirX = 0;
+			if(cp.client == client && !cp.hasFired()) {
+				cp.setHasFired(true);	
+				int pt = cp.player.getTeam();
+				int xdir = pt == 1 ? -1: 1;
 				
-				if(projectileInfo.getTeamId() == 1) {
-					dirX = 1;
-				}
-				else {
-					dirX = -1;
-				}
+				Projectile newProj = new Projectile(pt,
+						cp.player.getId(),
+						xdir,
+						new Point(cp.player.getPosition().x + BULLET_RADIUS, cp.player.getPosition().y + BULLET_RADIUS));
 				
-				
-				Projectile newProj = new Projectile(cp.player.getTeam(),
-						projectiles.size(),
-						dirX,
-						cp.player.getPosition());
-				
-				projectiles.add(newProj);		
+				projectiles.add(newProj);
+
+				sendSyncProjectile(newProj);
 			}
 		}
 	}

@@ -158,16 +158,6 @@ public enum SocketClient {
 		}
 	}
 
-	private void changeTeam(int number) {
-		Iterator<Event> iter = events.iterator();
-		while (iter.hasNext()) {
-			Event e = iter.next();
-			if (e != null) {
-				e.onChangeTeam(number);
-			}
-		}
-	}
-
 	private void setPlayerId(int n) {
 		Iterator<Event> iter = events.iterator();
 		while (iter.hasNext()) {
@@ -229,12 +219,12 @@ public enum SocketClient {
 		}
 	}
 	
-	private void setBulletPosition(ProjectileInfo pInfo, Point newPos) {
+	private void setBulletPosition(ProjectileInfo pInfo) {
 		Iterator<Event> iter = events.iterator();
 		while (iter.hasNext()) {
 			Event e = iter.next();
 			if (e != null) {
-				e.onSetBulletPosition(pInfo.getTeamId(), pInfo.getPlayerId(), pInfo.getDirX(), newPos);
+				e.onSetBulletPosition(pInfo.getTeamId(), pInfo.getPlayerId(), pInfo.getDirX(), pInfo.getPosition());
 			}
 		}
 	}
@@ -245,6 +235,16 @@ public enum SocketClient {
 			Event e = iter.next();
 			if (e != null) {
 				e.onRemoveBullet(id);
+			}
+		}
+	}
+	
+	private void setHP(Point idHP) {
+		Iterator<Event> iter = events.iterator();
+		while (iter.hasNext()) {
+			Event e = iter.next();
+			if (e != null) {
+				e.onSetHP(idHP);
 			}
 		}
 	}
@@ -298,10 +298,13 @@ public enum SocketClient {
 			setGameBoundary(p.getPoint());
 			break;
 		case SYNC_BULLET:
-			setBulletPosition(p.getProjectileInfo(), p.getPoint());
+			setBulletPosition(p.getProjectileInfo());
 			break;
 		case DESTROY_BULLET:
 			removeBullet(p.getNumber());
+			break;
+		case SET_HP:
+			setHP(p.getPoint());
 			break;
 		default:
 			log.log(Level.WARNING, "unhandled payload on client" + p);
@@ -380,13 +383,9 @@ public enum SocketClient {
 	
 
 
-	protected void sendShootBullet(int team, int playerId, Point clickPos, Point playerPos) {
+	protected void sendShootBullet() {
 		Payload p = new Payload();
-		p.setPayloadType(PayloadType.SHOOT);
-		Point direction = new Point(clickPos.x - playerPos.x, clickPos.y - playerPos.y);
-		
-		p.setProjectileInfo(team, playerId, direction.x);
-				
+		p.setPayloadType(PayloadType.SHOOT);	
 		sendPayload(p);
 	}
 

@@ -38,4 +38,6 @@ public interface Event {
 	void onSetBulletPosition(int teamId, int bulletId, int xDir, Point newPos);
 
 	void onRemoveBullet(int id);
+
+	void onSetHP(Point idHP);
 }

@@ -30,6 +30,9 @@ public class MoveAction extends AbstractAction {
 		case KeyEvent.VK_D:
 			KeyStates.D = pressed;
 			break;
+		case KeyEvent.VK_SPACE:
+			KeyStates.FIRE = pressed;
+			break;
 		}
 	}
 }

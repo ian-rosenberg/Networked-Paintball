@@ -4,7 +4,7 @@ import java.awt.Point;
 import java.io.Serializable;
 
 public class Payload implements Serializable {
-
+	
 	public class PlayerInfo implements Serializable {
 		/**
 		 * 
@@ -12,6 +12,7 @@ public class Payload implements Serializable {
 		private static final long serialVersionUID = -485567639439554589L;
 		private int teamId = 0;
 		private int playerId;
+		private int hp = 0;
 
 		public void setTeamId(int id) {
 			teamId = id;
@@ -46,6 +47,7 @@ public class Payload implements Serializable {
 		private int teamId = 0;
 		private int playerId = -1;
 		private int dirX = 0;
+		private Point position = new Point(0,0);
 		
 		public void setTeamId(int id) {
 			teamId = id;
@@ -70,16 +72,25 @@ public class Payload implements Serializable {
 		public void setPlayerId(int playerId) {
 			this.playerId = playerId;
 		}
+
+		public Point getPosition() {
+			return position;
+		}
+
+		public void setPosition(Point position) {
+			this.position = position;
+		}		
 	}
 	
 	public ProjectileInfo getProjectileInfo() {
 		return projectilePayload;
 	}
 	
-	public void setProjectileInfo(int team, int ownerId, int dX) {
+	public void setProjectileInfo(int team, int ownerId, int dX, Point position) {
 		projectilePayload.setTeamId(team);
 		projectilePayload.setDirX(dX);
 		projectilePayload.setPlayerId(ownerId);
+		projectilePayload.setPosition(position);
 	}
 
 	private ProjectileInfo projectilePayload = new ProjectileInfo();
@@ -177,9 +188,4 @@ public class Payload implements Serializable {
 		return timer;
 	}
 
-	public void setClientProjectileInfo(int teamId, int playerId, int dirX, Point position) {
-		projectilePayload.setTeamId(teamId);
-		projectilePayload.setPlayerId(playerId);
-		projectilePayload.setDirX(dirX);
-	}
 }

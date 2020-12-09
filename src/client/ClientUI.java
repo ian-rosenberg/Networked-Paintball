@@ -407,12 +407,6 @@ public class ClientUI extends JFrame implements Event {
 	}
 
 	@Override
-	public void onSetId(int id) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
 	public void onSetPlayerColor(int teamId, String playerName) {
 		for (User user : users) {
 			if (user.getName() == playerName) {
@@ -444,6 +438,12 @@ public class ClientUI extends JFrame implements Event {
 	}
 
 	@Override
+	public void onSetId(int id) {
+		// TODO Auto-generated method stub
+	
+	}
+
+	@Override
 	public void onSetTimeLeft(long time) {
 		// TODO Auto-generated method stub
 		
@@ -467,6 +467,12 @@ public class ClientUI extends JFrame implements Event {
 
 	@Override
 	public void onRemoveBullet(int id) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onSetHP(Point idHP) {
 		// TODO Auto-generated method stub
 		
 	}

@@ -169,8 +169,7 @@ public class ServerThread extends Thread {
 	protected boolean sendSyncProjectile(Projectile proj) {
 		Payload payload = new Payload();
 		payload.setPayloadType(PayloadType.SYNC_BULLET);
-		payload.setClientProjectileInfo(proj.getTeam(), proj.getId(), proj.getDirX(), proj.getPosition());
-		payload.setPoint(proj.getPosition());
+		payload.setProjectileInfo(proj.getTeam(), proj.getId(), proj.getDirX(), proj.getPosition());
 		return sendPayload(payload);
 	}
 
@@ -186,6 +185,13 @@ public class ServerThread extends Thread {
 		Payload payload = new Payload();
 		payload.setPayloadType(PayloadType.DESTROY_BULLET);
 		payload.setNumber(id);
+		return sendPayload(payload);
+	}
+	
+	protected boolean sendHP(int id, int hp) {
+		Payload payload = new Payload();
+		payload.setPayloadType(PayloadType.SET_HP);
+		payload.setPoint(new Point(id, hp));
 		return sendPayload(payload);
 	}
 		
@@ -258,7 +264,7 @@ public class ServerThread extends Thread {
 			}
 			break;
 		case SHOOT:
-			currentRoom.getSyncBullet(p.getProjectileInfo());
+			currentRoom.getSyncBullet(this);
 			break;
 		default:
 			log.log(Level.INFO, "Unhandled payload on server: " + p);
