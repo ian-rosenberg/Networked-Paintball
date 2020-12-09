@@ -158,16 +158,6 @@ public enum SocketClient {
 		}
 	}
 
-	private void changeTeam(int number) {
-		Iterator<Event> iter = events.iterator();
-		while (iter.hasNext()) {
-			Event e = iter.next();
-			if (e != null) {
-				e.onChangeTeam(number);
-			}
-		}
-	}
-
 	private void setPlayerId(int n) {
 		Iterator<Event> iter = events.iterator();
 		while (iter.hasNext()) {
@@ -249,22 +239,12 @@ public enum SocketClient {
 		}
 	}
 	
-	private void decrementHP(int id) {
+	private void setHP(Point idHP) {
 		Iterator<Event> iter = events.iterator();
 		while (iter.hasNext()) {
 			Event e = iter.next();
 			if (e != null) {
-				e.onDecrementHP(id);
-			}
-		}
-	}
-	
-	private void resetHP(int hp) {
-		Iterator<Event> iter = events.iterator();
-		while (iter.hasNext()) {
-			Event e = iter.next();
-			if (e != null) {
-				e.onResetHP(hp);
+				e.onSetHP(idHP);
 			}
 		}
 	}
@@ -323,11 +303,8 @@ public enum SocketClient {
 		case DESTROY_BULLET:
 			removeBullet(p.getNumber());
 			break;
-		case DECREMENT_HP:
-			decrementHP(p.getNumber());
-			break;
-		case RESET_HP:
-			resetHP(p.getNumber());
+		case SET_HP:
+			setHP(p.getPoint());
 			break;
 		default:
 			log.log(Level.WARNING, "unhandled payload on client" + p);

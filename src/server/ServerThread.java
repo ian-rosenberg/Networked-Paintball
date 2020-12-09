@@ -188,17 +188,10 @@ public class ServerThread extends Thread {
 		return sendPayload(payload);
 	}
 	
-
-	protected boolean sendDecrementHP() {
+	protected boolean sendHP(int id, int hp) {
 		Payload payload = new Payload();
-		payload.setPayloadType(PayloadType.DECREMENT_HP);
-		return sendPayload(payload);
-	}
-	
-	protected boolean sendResetHP(int hp) {
-		Payload payload = new Payload();
-		payload.setPayloadType(PayloadType.RESET_HP);
-		payload.setNumber(hp);
+		payload.setPayloadType(PayloadType.SET_HP);
+		payload.setPoint(new Point(id, hp));
 		return sendPayload(payload);
 	}
 		

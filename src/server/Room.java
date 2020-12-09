@@ -368,7 +368,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			// start
 			System.out.println("Everyone's ready, let's do this!");
 			state = GameState.GAME;
-			broadcastResetHP();
+			broadcastHP(-1, MAX_HP);
 			broadcastSetPlayersActive();
 			broadcastGameState();
 			currentNS = System.nanoTime();
@@ -579,13 +579,13 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 					ClientPlayer cp = getClientPlayerById(projId);
 					cp.setHasFired(false);
 					sendRemoveProjectile(projId);
-					break;
+					pIter.remove();
 				}
 				else if(targetIds.size() > 0) {
 					for(int id : targetIds) {
 						ClientPlayer cp = getClientPlayerById(id);
-						cp.player.decrementHP();
-						cp.client.sendDecrementHP();
+						cp.player.setHP(cp.player.getHP()-1);
+						broadcastHP(cp.player.getId(), cp.player.getHP());
 						log.log(Level.INFO, cp.client.getClientName() + " was hit!");
 						sendMessage(cp.client, cp.client.getClientName() + " was hit!");
 					}
@@ -593,7 +593,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 					ClientPlayer cp = getClientPlayerById(projId);
 					cp.setHasFired(false);
 					sendRemoveProjectile(projId);
-					break;
+					pIter.remove();
 				}
 			}
 		}
@@ -647,11 +647,17 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	
 
 
-	private void broadcastResetHP() {
-		Iterator<ClientPlayer> iter = clients.iterator();
-		while (iter.hasNext()) {
-			ClientPlayer c = iter.next();
-			c.client.sendResetHP(MAX_HP);
+	private void broadcastHP(int id, int hp) {
+		if(id != -1) {
+			ClientPlayer cp = getClientPlayerById(id);
+			cp.client.sendHP(id, hp);
+		}
+		else {
+			Iterator<ClientPlayer> iter = clients.iterator();
+			while (iter.hasNext()) {
+				ClientPlayer c = iter.next();
+				c.client.sendHP(id, hp);
+			}
 		}
 	}
 
@@ -747,7 +753,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 				Projectile newProj = new Projectile(pt,
 						cp.player.getId(),
 						xdir,
-						new Point(cp.player.getPosition().x + BULLET_RADIUS/2, cp.player.getPosition().y + BULLET_RADIUS/2));
+						new Point(cp.player.getPosition().x + BULLET_RADIUS, cp.player.getPosition().y + BULLET_RADIUS));
 				
 				projectiles.add(newProj);
 

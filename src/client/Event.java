@@ -39,7 +39,5 @@ public interface Event {
 
 	void onRemoveBullet(int id);
 
-	void onDecrementHP(int id);
-
-	void onResetHP(int hp);
+	void onSetHP(Point idHP);
 }

@@ -472,13 +472,7 @@ public class ClientUI extends JFrame implements Event {
 	}
 
 	@Override
-	public void onDecrementHP(int id) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onResetHP(int hp) {
+	public void onSetHP(Point idHP) {
 		// TODO Auto-generated method stub
 		
 	}

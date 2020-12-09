@@ -422,7 +422,9 @@ public class GamePanel extends BaseGamePanel implements Event {
 			if(proj.getId() == bulletId) {
 				proj.setDirX(xDir);
 				proj.setTeam(teamId);
+				proj.setPosition(newPos);
 				newBullet = false;
+				return;
 			}
 		}
 		
@@ -441,24 +443,28 @@ public class GamePanel extends BaseGamePanel implements Event {
 			Projectile proj = pIter.next();
 			if(proj.getId() == id) {
 				pIter.remove();
+				return;
 			}
 		}
 	}
 
 	@Override
-	public void onDecrementHP(int id) {
-		for (Player player : players) {
-			if(player.getId() == id)
-			{
-				player.decrementHP();
+	public void onSetHP(Point idHP) {
+		if(idHP.x == -1) {
+			for (Player player : players) {
+				player.setHP(idHP.y);
+				repaint();
+			}
+		}else{
+			for (Player player : players) {
+				if(player.getId() == idHP.x)
+				{
+					player.setHP(idHP.y);
+					repaint();
+					return;
+				}
 			}
 		}
 	}
 
-	@Override
-	public void onResetHP(int hp) {
-		for (Player player : players) {
-			player.setHP(hp);
-		}
-	}
 }
