@@ -5,39 +5,39 @@ import java.awt.Point;
 import server.GameState;
 
 public interface Event {
-	void onClientConnect(String clientName, String message, int clientId);
+    void onClientConnect(String clientName, String message, int clientId);
 
-	void onClientDisconnect(String clientName, String message);
+    void onClientDisconnect(String clientName, String message);
 
-	void onMessageReceive(String clientName, String message);
+    void onMessageReceive(String clientName, String message);
 
-	void onChangeRoom();
+    void onChangeRoom();
 
-	void onSyncDirection(String clientName, Point direction);
+    void onSyncDirection(String clientName, Point direction);
 
-	void onSyncPosition(String clientName, Point position);
+    void onSyncPosition(String clientName, Point position);
 
-	void onGetRoom(String roomname);
+    void onGetRoom(String roomname);
 
-	void onChangeTeam(int number);
+    void onChangeTeam(int number);
 
-	void onSetId(int id);
+    void onSetId(int id, String clientName);
 
-	void onSetPlayerColor(int teamId, String clientName);
+    void onSetPlayerColor(int teamId, String clientName);
 
-	void onGameStart(Point startPos, int playerId);// Setting up for game start
+    void onGameStart(Point startPos, int playerId);// Setting up for game start
 
-	void onSetPlayerActivity(boolean bool);
+    void onSetPlayerActivity(boolean bool);
 
-	void onSetGameState(GameState state);
+    void onSetGameState(GameState state);
 
-	void onSetTimeLeft(long time);
+    void onSetTimeLeft(long time);
 
-	void onSetGameBoundary(int x, int y);
+    void onSetGameBoundary(int x, int y);
 
-	void onSetBulletPosition(int teamId, int bulletId, int xDir, Point newPos);
+    void onSetBulletPosition(int teamId, int bulletId, int xDir, Point newPos);
 
-	void onRemoveBullet(int id);
+    void onRemoveBullet(int id);
 
-	void onSetHP(Point idHP);
+    void onSetHP(Point idHP);
 }
