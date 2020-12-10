@@ -127,12 +127,12 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 					String name = client.getClientName();
 					if(clientNames.indexOf(name) < 0) {
 						clientNames.add(name);
+						p.setName(name);
 					}
 					else {
-						name.concat("0");
+						p.setName(name + "1");
 					}
 					
-					p.setName(name);
 
 					c.player = p;
 
@@ -151,12 +151,12 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			String name = client.getClientName();
 			if(clientNames.indexOf(name) < 0) {
 				clientNames.add(name);
+				p.setName(name);
 			}
 			else {
-				name.concat("1");
+				p.setName(name + "1");
 			}
 			
-			p.setName(name);
 			p.setId(clients.size());
 
 			// add Player and Client reference to ClientPlayer object reference
