@@ -99,19 +99,18 @@ public class ServerThread extends Thread {
 		return sendPayload(payload);
 	}
 
-	protected boolean sendId(int idNum) {
+	protected boolean sendId(int idNum, String name) {
 		Payload payload = new Payload();
 		payload.setPayloadType(PayloadType.ASSIGN_ID);
-		payload.setClientName(clientName);
+		payload.setClientName(name);
 		payload.setNumber(idNum);
 		return sendPayload(payload);
 	}
 
-	protected boolean sendTeamInfo(int teamId, String clientName) {
+	protected boolean sendTeamInfo(Point teamPlayerId) {
 		Payload payload = new Payload();
 		payload.setPayloadType(PayloadType.SET_TEAM_INFO);
-		payload.setNumber(teamId);
-		payload.setClientName(clientName);
+		payload.setPoint(new Point(teamPlayerId));
 
 		return sendPayload(payload);
 	}

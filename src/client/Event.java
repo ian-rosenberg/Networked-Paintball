@@ -21,9 +21,9 @@ public interface Event {
 
 	void onChangeTeam(int number);
 
-	void onSetId(int id);
+	void onSetId(int id, String name);
 
-	void onSetPlayerColor(int teamId, String clientName);
+	void onSetPlayerColor(int teamId, int playerId);
 
 	void onGameStart(Point startPos, int playerId);// Setting up for game start
 

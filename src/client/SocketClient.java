@@ -158,22 +158,22 @@ public enum SocketClient {
 		}
 	}
 
-	private void setPlayerId(int n) {
+	private void setPlayerId(int n, String name) {
 		Iterator<Event> iter = events.iterator();
 		while (iter.hasNext()) {
 			Event e = iter.next();
 			if (e != null) {
-				e.onSetId(n);
+				e.onSetId(n, name);
 			}
 		}
 	}
 
-	private void setPlayerColor(int teamId, String clientName) {
+	private void setPlayerColor(Point teamPlayerId) {
 		Iterator<Event> iter = events.iterator();
 		while (iter.hasNext()) {
 			Event e = iter.next();
 			if (e != null) {
-				e.onSetPlayerColor(teamId, clientName);
+				e.onSetPlayerColor(teamPlayerId.x, teamPlayerId.y);
 			}
 		}
 	}
@@ -280,10 +280,10 @@ public enum SocketClient {
 			sendRoom(p.getMessage());
 			break;
 		case ASSIGN_ID:
-			setPlayerId(p.getNumber());
+			setPlayerId(p.getNumber(), p.getClientName());
 			break;
 		case SET_TEAM_INFO:
-			setPlayerColor(p.getNumber(), p.getClientName());
+			setPlayerColor(p.getPoint());
 			break;
 		case SET_ACTIVITY:
 			setPlayerActivity(p.getBool());

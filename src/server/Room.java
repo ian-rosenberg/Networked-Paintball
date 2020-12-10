@@ -36,6 +36,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	private final static String READY = "ready";
 	private List<ClientPlayer> clients = new ArrayList<ClientPlayer>();
 	private List<Projectile> projectiles = new ArrayList<Projectile>();
+	private List<String> clientNames = new ArrayList<String>();
 	private static Dimension gameAreaSize = new Dimension(1280, 720);
 
 	private long timeLeft = ROUND_TIME;
@@ -72,15 +73,14 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 
 	private void teamAssign(ClientPlayer clientPlayer) {
 		int playerId = clientPlayer.player.getId();
-		String name = clientPlayer.client.getClientName();
 
 		if (playerId % 2 == 0) {
 			clientPlayer.player.setTeam(TEAM_A);
-			clientPlayer.client.sendTeamInfo(TEAM_A, name);
+			clientPlayer.client.sendTeamInfo(new Point(TEAM_A, playerId));
 		} else {
 
 			clientPlayer.player.setTeam(TEAM_B);
-			clientPlayer.client.sendTeamInfo(TEAM_B, name);
+			clientPlayer.client.sendTeamInfo(new Point(TEAM_B, playerId));
 		}
 		
 		clientPlayer.client.sendBoundary(gameAreaSize);
@@ -124,7 +124,15 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 				if (c.player == null) {
 					log.log(Level.WARNING, "Client " + client.getClientName() + " player was null, creating");
 					Player p = new Player();
-					p.setName(client.getClientName());
+					String name = client.getClientName();
+					if(clientNames.indexOf(name) < 0) {
+						clientNames.add(name);
+					}
+					else {
+						name.concat("0");
+					}
+					
+					p.setName(name);
 
 					c.player = p;
 
@@ -140,10 +148,16 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			// create a player reference for this client
 			// so server can determine position
 			Player p = new Player();
-			p.setName(client.getClientName());
+			String name = client.getClientName();
+			if(clientNames.indexOf(name) < 0) {
+				clientNames.add(name);
+			}
+			else {
+				name.concat("1");
+			}
+			
+			p.setName(name);
 			p.setId(clients.size());
-
-			client.sendTeamInfo(p.getId() % 2, p.getName());
 
 			// add Player and Client reference to ClientPlayer object reference
 			ClientPlayer cp = new ClientPlayer(client, p);
@@ -158,8 +172,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	}
 
 	private void setPlayerInfo(ClientPlayer c) {
-		c.player.setId(clients.indexOf(c));
-		c.client.sendId(c.player.getId());
+		c.client.sendId(c.player.getId(), c.client.getClientName());
 		teamAssign(c);
 	}
 
@@ -202,22 +215,12 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			if (c.client != client) {
 				boolean messageSent = client.sendDirection(c.client.getClientName(), c.player.getDirection());
 				if (messageSent) {
-					if (client.sendPosition(c.client.getClientName(), c.player.getPosition())) {
-						if (client.sendTeamInfo(c.player.getTeam(), c.client.getClientName())) {
-							syncTeams(c);
+					if(client.sendPosition(c.client.getClientName(), c.player.getPosition())) {
+						if (client.sendTeamInfo(new Point(c.player.getTeam(), c.player.getId()))) {
+							
 						}
 					}
 				}
-			}
-		}
-	}
-
-	private void syncTeams(ClientPlayer current) {
-		Iterator<ClientPlayer> clientIter = clients.iterator();
-		while (clientIter.hasNext()) {
-			ClientPlayer cp = clientIter.next();
-			if (cp != current) {
-				current.client.sendTeamInfo(cp.player.getTeam(), cp.client.getClientName());
 			}
 		}
 	}
