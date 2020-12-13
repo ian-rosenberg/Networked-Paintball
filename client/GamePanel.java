@@ -40,11 +40,16 @@ public class GamePanel extends BaseGamePanel implements Event {
 	private final static long ROUND_TIME = TimeUnit.MINUTES.toNanos(5);// Round time is 5 min in nanoseconds
 	public final static long MINUTE = TimeUnit.MINUTES.toNanos(1);// 1 second in nanoseconds, sources say this is more
 	// accurate than ms
+	private static final int LARGE_TEXT_FACTOR = 12;//Doubled again for a 48 pt font
 	private static final int TEXT_FACTOR = 6;// Prof said a size of 3 was acceptable for 12pt font, so I'll double for
 	// 24pt font
 	private static long timeLeft = ROUND_TIME;
 	private static int teamBScore = 0;
 	private static int teamAScore = 0;
+	
+	private static int winningTeam = 0;
+	private static String winText = "";
+	
 	private static GameState gameState = GameState.LOBBY;
 	private static Dimension boundary;
 
@@ -276,7 +281,11 @@ public class GamePanel extends BaseGamePanel implements Event {
 			g.drawString(timeLeftStr, boundary.width / 2, 25);
 			g.drawString("Team A Score: " + teamAScore, boundary.width / 3, 50);
 			g.drawString("Team B Score: " + teamBScore, (int) (boundary.width * 0.667), 50);
-		} else {
+		} else if(gameState == GameState.END){
+			g.setColor(Color.WHITE);
+			g.setFont(new Font("Monospaced", Font.BOLD, 48));
+			g.drawString(winText, boundary.width / 2 - winText.length() * LARGE_TEXT_FACTOR, 100);
+		}else {
 			String notStartedStr = "Game has not started yet!";
 			int offset = (boundary.width / 2) - (notStartedStr.length() * TEXT_FACTOR);
 			g.setColor(Color.WHITE);
@@ -416,6 +425,20 @@ public class GamePanel extends BaseGamePanel implements Event {
 	@Override
 	public void onSetGameState(GameState state) {
 		gameState = state;
+		
+		if(gameState == GameState.END) {
+			if(teamAScore == teamBScore) {
+				winText = "Teams tied!";
+			}
+			else if(teamAScore > teamBScore) {
+				winText = "Team A won with "+teamAScore+" outs!";
+			}
+			else {
+				winText = "Team B won with "+teamBScore+" outs!";
+			}
+			
+			localBullets.clear();
+		}
 	}
 
 	@Override
@@ -492,4 +515,26 @@ public class GamePanel extends BaseGamePanel implements Event {
 		}
 	}
 
+	@Override
+	public void onSetScores(int scoreA, int scoreB) {
+		teamAScore = scoreA;
+		teamBScore = scoreB;
+		int aPlayers = 0;
+		int bPlayers = 0;
+		for(Player p: players) {
+			if(p.getTeam()==1) {
+				aPlayers++;
+			}else {
+				bPlayers++;
+			}
+		}
+		
+		if(teamAScore == bPlayers) {
+			winningTeam = 1;//Team A won
+		}else if(teamBScore == aPlayers) {
+			winningTeam = 2;//Team B won
+		}
+		
+		repaint();
+	}
 }

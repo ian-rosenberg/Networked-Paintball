@@ -16,6 +16,7 @@ import server.GameState;
 import server.Payload;
 import server.Payload.IdNamePair;
 import server.Payload.ProjectileInfo;
+import server.Payload.TeamScore;
 import server.PayloadType;
 
 public enum SocketClient {
@@ -246,13 +247,22 @@ public enum SocketClient {
 		}
 	}
 	
-
 	private void disablePlayer(IdNamePair pair) {
 		Iterator<Event> iter = events.iterator();
 		while (iter.hasNext()) {
 			Event e = iter.next();
 			if (e != null) {
 				e.onDisablePlayer(pair.getId(), pair.getName());
+			}
+		}
+	}
+	
+	private void setTeamScores(TeamScore pair) {
+		Iterator<Event> iter = events.iterator();
+		while (iter.hasNext()) {
+			Event e = iter.next();
+			if (e != null) {
+				e.onSetScores(pair.getScoreA(), pair.getScoreB());
 			}
 		}
 	}
@@ -316,6 +326,9 @@ public enum SocketClient {
 			break;
 		case DISABLE_PLAYER:
 			disablePlayer(p.getDisableClient());
+			break;
+		case SET_SCORE:
+			setTeamScores(p.getScorePayload());
 			break;
 		default:
 			log.log(Level.WARNING, "unhandled payload on client" + p);

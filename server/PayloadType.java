@@ -24,4 +24,5 @@ public enum PayloadType {
 	DESTROY_BULLET,
 	SET_HP, 
 	DISABLE_PLAYER,
+	SET_SCORE
 }

@@ -82,6 +82,46 @@ public class Payload implements Serializable {
 	private IdNamePair disableClient = new IdNamePair(-1, "");
 	private IdNamePair clientIdName = new IdNamePair(-1, "");
 
+	public class TeamScore implements Serializable{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 7385670673857354560L;
+		private int scoreA;
+		private int scoreB;
+		
+		public TeamScore(int a, int b) {
+			setScoreA(a);
+			setScoreB(b);
+		}
+		
+		private void setScoreA(int scoreA) {
+			this.scoreA = scoreA;		
+		}
+
+		public void setScoreB(int scoreB) {
+			this.scoreB = scoreB;
+		}
+
+		public int getScoreA() {
+			return scoreA;
+		}
+		public int getScoreB() {
+			return scoreB;
+		}
+	}
+	
+	private TeamScore teamScore = new TeamScore(0,0);
+	
+	public TeamScore getScorePayload() {
+		return teamScore;
+	}
+	
+	public void setScorePayload(int a, int b) {
+		teamScore.scoreA = a;
+		teamScore.scoreB = b;
+	}
+	
 	private int clientId = -1;
 
 	/**

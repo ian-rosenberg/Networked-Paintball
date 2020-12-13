@@ -42,4 +42,6 @@ public interface Event {
     void onSetHP(Point idHP);
 
 	void onDisablePlayer(int id, String clientName);
+
+	void onSetScores(int scoreA, int scoreB);
 }

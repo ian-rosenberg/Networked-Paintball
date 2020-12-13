@@ -6,6 +6,7 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Timer;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,6 +29,9 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	private final static int BULLET_RADIUS = 15;
 	private final int MAX_HP = 3;
 
+	private static int teamAScore = 0;
+	private static int teamBScore = 0;
+	
 	// Commands
 	private final static String COMMAND_TRIGGER = "/";
 	private final static String CREATE_ROOM = "createroom";
@@ -562,7 +566,44 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 						log.log(Level.INFO, cp.client.getClientName() + " was hit!");
 						if(!cp.player.HealthCheck()) {
 							broadcastDeadPlayer(cp);
+							if(cp.player.getTeam() == TEAM_A) {
+								teamBScore++;
+							}else {
+								teamAScore++;
+							}
+							
+							broadcastScores(teamAScore, teamBScore);
+							int teamAPlayers = 0;
+							int teamBPlayers = 0;
+							
 							sendMessage(cp.client, cp.client.getClientName() + " is out!");
+							
+							for(ClientPlayer c: clients) {
+								if(c.player.getTeam() == TEAM_A && c.player.getHP() <= 0) {
+									teamBPlayers++;
+								}
+								else if(c.player.getTeam() == TEAM_A && c.player.getHP() <= 0) {
+									teamAPlayers++;
+								}
+							}
+							
+							if(teamAPlayers == teamBScore || teamBPlayers == teamAScore) {
+								state = GameState.END;
+								projectiles.clear();
+								broadcastGameState();
+								broadcastSetPlayersInactive();
+								try {
+									TimeUnit.SECONDS.sleep(5L);
+								} catch (InterruptedException e) {
+									// TODO Auto-generated catch block
+									System.out.println("Sleeping for 5 seconds before moving back into Lobby.");
+								}
+								
+								state = GameState.LOBBY;
+								broadcastGameState();
+								
+								return;
+							}
 						}else {
 							sendMessage(cp.client, cp.client.getClientName() + " was hit!");
 						}
@@ -629,6 +670,14 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		}
 
 		return null;
+	}
+
+	private void broadcastScores(int teamAScore, int teamBScore) {
+		Iterator<ClientPlayer> iter = clients.iterator();
+		while (iter.hasNext()) {
+			ClientPlayer c = iter.next();
+			c.client.sendDisablePlayer(teamAScore, teamBScore);
+		}
 	}
 	
 	private void broadcastDeadPlayer(ClientPlayer cp) {

@@ -489,4 +489,10 @@ public class ClientUI extends JFrame implements Event {
 		repaint();
 		
 	}
+
+	@Override
+	public void onSetScores(int scoreA, int scoreB) {
+		// TODO Auto-generated method stub
+		
+	}
 }
