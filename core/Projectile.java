@@ -14,8 +14,8 @@ import server.ClientPlayer;
 public class Projectile extends GameObject {
 	private int radius = 15;
 	private int dirX = 0;
-	
-	public Projectile(int tId, int projId, int xDir, Point player){
+
+	public Projectile(int tId, int projId, int xDir, Point player) {
 		this.team = tId;
 		this.setId(projId);
 		this.dirX = xDir;
@@ -24,31 +24,31 @@ public class Projectile extends GameObject {
 		this.setTeam(tId);
 		this.setSpeed(15, 0);
 	}
-	
+
 	public boolean passedScreenBounds(Dimension bounds) {
-		if(position.getX() < 5 || position.getX() > bounds.getWidth()-10) {		
-			return true; 
+		if (position.getX() < 5 || position.getX() > bounds.getWidth() - 10) {
+			return true;
 		}
-		
+
 		return false;
 	}
 
 	public List<Integer> getCollidingPlayers(List<ClientPlayer> clientPlayers) {
 		List<Integer> targetIds = new ArrayList<Integer>();
-		
+
 		Iterator<ClientPlayer> cpIter = clientPlayers.iterator();
-		while(cpIter.hasNext()) {
+		while (cpIter.hasNext()) {
 			ClientPlayer cp = cpIter.next();
-			
-			if(Math.hypot(position.x - cp.player.position.x, position.y - cp.player.position.y) < radius + cp.player.getSize().x/2 &&
-					cp.player.getTeam() != team) {
+
+			if (Math.hypot(position.x - cp.player.position.x, position.y - cp.player.position.y) < radius
+					+ cp.player.getSize().x / 2 && cp.player.getTeam() != team) {
 				targetIds.add(cp.player.getId());
 			}
 		}
-		
+
 		return targetIds;
 	}
-	
+
 	@Override
 	public boolean draw(Graphics g) {
 		// using a boolean here so we can block drawing if isActive is false via call to
@@ -59,15 +59,15 @@ public class Projectile extends GameObject {
 		}
 		return true;
 	}
-	
+
 	public void setDirX(int dir) {
 		dirX = dir;
 	}
-	
+
 	public int getDirX() {
 		return dirX;
 	}
-	
+
 	@Override
 	public void move() {
 		if (!isActive) {

@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 
 import server.GameState;
 import server.Payload;
+import server.Payload.IdNamePair;
 import server.Payload.ProjectileInfo;
 import server.PayloadType;
 
@@ -128,22 +129,22 @@ public enum SocketClient {
 		}
 	}
 
-	private void sendSyncDirection(String clientName, Point direction) {
+	private void sendSyncDirection(int clientId, Point direction) {
 		Iterator<Event> iter = events.iterator();
 		while (iter.hasNext()) {
 			Event e = iter.next();
 			if (e != null) {
-				e.onSyncDirection(clientName, direction);
+				e.onSyncDirection(clientId, direction);
 			}
 		}
 	}
 
-	private void sendSyncPosition(String clientName, Point position) {
+	private void sendSyncPosition(int clientId, Point position) {
 		Iterator<Event> iter = events.iterator();
 		while (iter.hasNext()) {
 			Event e = iter.next();
 			if (e != null) {
-				e.onSyncPosition(clientName, position);
+				e.onSyncPosition(clientId, position);
 			}
 		}
 	}
@@ -158,16 +159,13 @@ public enum SocketClient {
 		}
 	}
 
-	private void setPlayerId(int n) {
-		Iterator<Event> iter = events.iterator();
-		while (iter.hasNext()) {
-			Event e = iter.next();
-			if (e != null) {
-				e.onSetId(n);
-			}
-		}
-	}
-
+	/*
+	 * private void setPlayerId(int n, String name) { Iterator<Event> iter =
+	 * events.iterator(); while (iter.hasNext()) { Event e = iter.next(); if (e !=
+	 * null) { e.onSetId(n, name); } } }
+	 */
+	// TODO keep this as clientName since it's used both on
+	// GamePanel AND ClientUI
 	private void setPlayerColor(int teamId, String clientName) {
 		Iterator<Event> iter = events.iterator();
 		while (iter.hasNext()) {
@@ -197,7 +195,6 @@ public enum SocketClient {
 			}
 		}
 	}
-	
 
 	private void setTimeLeft(long time) {
 		Iterator<Event> iter = events.iterator();
@@ -208,7 +205,7 @@ public enum SocketClient {
 			}
 		}
 	}
-	
+
 	private void setGameBoundary(Point point) {
 		Iterator<Event> iter = events.iterator();
 		while (iter.hasNext()) {
@@ -218,7 +215,7 @@ public enum SocketClient {
 			}
 		}
 	}
-	
+
 	private void setBulletPosition(ProjectileInfo pInfo) {
 		Iterator<Event> iter = events.iterator();
 		while (iter.hasNext()) {
@@ -238,13 +235,24 @@ public enum SocketClient {
 			}
 		}
 	}
-	
+
 	private void setHP(Point idHP) {
 		Iterator<Event> iter = events.iterator();
 		while (iter.hasNext()) {
 			Event e = iter.next();
 			if (e != null) {
 				e.onSetHP(idHP);
+			}
+		}
+	}
+	
+
+	private void disablePlayer(IdNamePair pair) {
+		Iterator<Event> iter = events.iterator();
+		while (iter.hasNext()) {
+			Event e = iter.next();
+			if (e != null) {
+				e.onDisablePlayer(pair.getId(), pair.getName());
 			}
 		}
 	}
@@ -258,7 +266,7 @@ public enum SocketClient {
 
 		switch (p.getPayloadType()) {
 		case CONNECT:
-			sendOnClientConnect(p.getClientName(), p.getMessage(), p.getNumber());
+			sendOnClientConnect(p.getClientName(), p.getMessage(), p.getClientId());
 			break;
 		case DISCONNECT:
 			sendOnClientDisconnect(p.getClientName(), p.getMessage());
@@ -270,17 +278,17 @@ public enum SocketClient {
 			sendOnChangeRoom();
 			break;
 		case SYNC_DIRECTION:
-			sendSyncDirection(p.getClientName(), p.getPoint());
+			sendSyncDirection(p.getClientId(), p.getPoint());
 			break;
 		case SYNC_POSITION:
-			sendSyncPosition(p.getClientName(), p.getPoint());
+			sendSyncPosition(p.getClientId(), p.getPoint());
 			break;
 		case GET_ROOMS:
 			// reply from ServerThread
 			sendRoom(p.getMessage());
 			break;
 		case ASSIGN_ID:
-			setPlayerId(p.getNumber());
+			// setPlayerId(p.getClientId(), p.getClientName());
 			break;
 		case SET_TEAM_INFO:
 			setPlayerColor(p.getNumber(), p.getClientName());
@@ -305,6 +313,9 @@ public enum SocketClient {
 			break;
 		case SET_HP:
 			setHP(p.getPoint());
+			break;
+		case DISABLE_PLAYER:
+			disablePlayer(p.getDisableClient());
 			break;
 		default:
 			log.log(Level.WARNING, "unhandled payload on client" + p);
@@ -380,12 +391,10 @@ public enum SocketClient {
 		p.setMessage(query);
 		sendPayload(p);
 	}
-	
-
 
 	protected void sendShootBullet() {
 		Payload p = new Payload();
-		p.setPayloadType(PayloadType.SHOOT);	
+		p.setPayloadType(PayloadType.SHOOT);
 		sendPayload(p);
 	}
 

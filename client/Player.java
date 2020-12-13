@@ -18,14 +18,14 @@ public class Player extends GameObject implements Serializable {
 	private Color color = Color.WHITE;
 	private Point nameOffset = new Point(0, -5);
 	private boolean isReady = false;
-	private Point lineEnd = new Point(position.x + (size.width/2), position.y + (size.height/2));
+	private Point lineEnd = new Point(position.x + (size.width / 2), position.y + (size.height / 2));
 	private int HP = -1;
 
 	public void setDirectionLine(Point dir) {
 		lineEnd.x = dir.x;
 		lineEnd.y = dir.y;
 	}
-	
+
 	public void setReady(boolean r) {
 		isReady = r;
 	}
@@ -47,8 +47,10 @@ public class Player extends GameObject implements Serializable {
 			g.setColor(Color.WHITE);
 			g.setFont(new Font("Monospaced", Font.PLAIN, 12));
 			g.drawString("Name: " + name + " HP: " + HP, position.x + nameOffset.x, position.y + nameOffset.y);
-			if(lineEnd.x != position.x || lineEnd.y != position.y) {
-				g.drawLine(position.x + (size.width/2), position.y + (size.height/2), position.x + (size.width/2) + (lineEnd.x * LINE_FACTOR), position.y + (size.height/2) + (lineEnd.y * LINE_FACTOR));
+			if (lineEnd.x != position.x || lineEnd.y != position.y) {
+				g.drawLine(position.x + (size.width / 2), position.y + (size.height / 2),
+						position.x + (size.width / 2) + (lineEnd.x * LINE_FACTOR),
+						position.y + (size.height / 2) + (lineEnd.y * LINE_FACTOR));
 			}
 		}
 		return true;
@@ -67,32 +69,36 @@ public class Player extends GameObject implements Serializable {
 	public void setColor(Color teamColor) {
 		color = teamColor;
 	}
-	
+
 	public int passedScreenBounds(Dimension bounds) {
-		if(position.getX() < 5) {		
-			return 4; 
+		if (position.getX() < 5) {
+			return 4;
 		}
-		
-		if(position.getX() > bounds.getWidth()-10) {
+
+		if (position.getX() > bounds.getWidth() - 10) {
 			return 2;
 		}
-		
-		if(position.getY() < 5) {		
-			return 1; 
+
+		if (position.getY() < 5) {
+			return 1;
 		}
-		
-		if(position.getY() > bounds.getHeight()-5) {
+
+		if (position.getY() > bounds.getHeight() - 5) {
 			return 3;
 		}
-		
+
 		return -1;
 	}
 
 	public int getHP() {
 		return HP;
 	}
-	
+
 	public void setHP(int hp) {
 		HP = hp;
+	}
+
+	public boolean HealthCheck() {
+		return HP > 0 ? true : false;
 	}
 }

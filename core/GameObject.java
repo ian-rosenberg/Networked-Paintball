@@ -74,7 +74,7 @@ public abstract class GameObject implements Serializable {
 		size.width = Math.max(0, width);
 		size.height = Math.max(0, height);
 	}
-	
+
 	public Point getSize() {
 		return new Point(size.width, size.height);
 	}

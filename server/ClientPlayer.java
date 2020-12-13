@@ -18,6 +18,6 @@ public class ClientPlayer {
 
 	public ServerThread client;
 	public Player player;
-	
+
 	private boolean hasFired = false;
 }

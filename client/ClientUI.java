@@ -50,13 +50,12 @@ public class ClientUI extends JFrame implements Event {
 	JMenuItem roomsSearch;
 	List<User> users = new ArrayList<User>();
 	private final static Logger log = Logger.getLogger(ClientUI.class.getName());
-	private static Dimension gamePanelSize = new Dimension(0,0);
+	private static Dimension gamePanelSize = new Dimension(0, 0);
 	Dimension windowSize = Toolkit.getDefaultToolkit().getScreenSize();
 	GamePanel game;
 	String username;
 	RoomsPanel roomsPanel;
 	JMenuBar menu;
-	
 
 	public ClientUI(String title) {
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -382,13 +381,13 @@ public class ClientUI extends JFrame implements Event {
 	}
 
 	@Override
-	public void onSyncDirection(String clientName, Point direction) {
+	public void onSyncDirection(int clientId, Point direction) {
 		// TODO Auto-generated method stub
 		// no need to sync this for ClientUI
 	}
 
 	@Override
-	public void onSyncPosition(String clientName, Point position) {
+	public void onSyncPosition(int clientId, Point position) {
 		// TODO Auto-generated method stub
 		// no need to sync this for ClientUI
 	}
@@ -440,40 +439,54 @@ public class ClientUI extends JFrame implements Event {
 	@Override
 	public void onSetId(int id) {
 		// TODO Auto-generated method stub
-	
+
 	}
 
 	@Override
 	public void onSetTimeLeft(long time) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onSetGameBoundary(int x, int y) {
 		gamePanelSize.width = x;
 		gamePanelSize.height = y;
-
-		game.setPreferredSize(gamePanelSize);
-		revalidate();
+		if (game != null) {
+			game.setPreferredSize(gamePanelSize);
+			revalidate();
+		}
 	}
 
 	@Override
 	public void onSetBulletPosition(int teamId, int bulletId, int dirX, Point newPos) {
 		// TODO Auto-generated method stub
-		//Nothing to do here, 
-		
+		// Nothing to do here,
+
 	}
 
 	@Override
 	public void onRemoveBullet(int id) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onSetHP(Point idHP) {
 		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onDisablePlayer(int id, String clientName) {
+		for (User user : users) {
+			if (user.getName() == clientName) {
+				user.setUserColor(0);
+				break;
+			}
+		}
+
+		repaint();
 		
 	}
 }

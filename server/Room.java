@@ -13,7 +13,6 @@ import java.util.logging.Logger;
 import client.Player;
 import core.BaseGamePanel;
 import core.Projectile;
-import server.Payload.ProjectileInfo;
 
 public class Room extends BaseGamePanel implements AutoCloseable {
 	private static SocketServer server;// used to refer to accessible server functions
@@ -70,21 +69,18 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		return roomId;
 	}
 
-	private void teamAssign(ClientPlayer clientPlayer) {
-		int playerId = clientPlayer.player.getId();
-		String name = clientPlayer.client.getClientName();
-
-		if (playerId % 2 == 0) {
-			clientPlayer.player.setTeam(TEAM_A);
-			clientPlayer.client.sendTeamInfo(TEAM_A, name);
-		} else {
-
-			clientPlayer.player.setTeam(TEAM_B);
-			clientPlayer.client.sendTeamInfo(TEAM_B, name);
-		}
-		
-		clientPlayer.client.sendBoundary(gameAreaSize);
-	}
+	/*
+	 * private void teamAssign(ClientPlayer clientPlayer) { int playerId =
+	 * clientPlayer.player.getId();
+	 * 
+	 * if (playerId % 2 == 0) { clientPlayer.player.setTeam(TEAM_A);
+	 * clientPlayer.client.sendTeamInfo(TEAM_A, playerId); } else {
+	 * 
+	 * clientPlayer.player.setTeam(TEAM_B); clientPlayer.client.sendTeamInfo(TEAM_B,
+	 * playerId); }
+	 * 
+	 * clientPlayer.client.sendBoundary(gameAreaSize); }
+	 */
 
 	private ClientPlayer getClientPlayer(ServerThread client) {
 		Iterator<ClientPlayer> iter = clients.iterator();
@@ -111,9 +107,20 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		}
 	}
 
+	private void syncTeamSelfAndBroadcast(ServerThread client, Player p) {
+		// client.sendTeamInfo(p.getName(), p.getTeam());
+		for (ClientPlayer cp : clients) {
+			if (cp != null && cp.client != null) {
+				cp.client.sendTeamInfo(p.getName(), p.getTeam());
+			}
+		}
+	}
+
 	protected synchronized void addClient(ServerThread client) {
+		System.out.println("Client joining room " + roomId);
 		client.setCurrentRoom(this);
 		boolean exists = false;
+		Player newPlayer = null;
 		// since we updated to a different List type, we'll need to loop through to find
 		// the client to check against
 		Iterator<ClientPlayer> iter = clients.iterator();
@@ -123,12 +130,8 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 				exists = true;
 				if (c.player == null) {
 					log.log(Level.WARNING, "Client " + client.getClientName() + " player was null, creating");
-					Player p = new Player();
-					p.setName(client.getClientName());
-
-					c.player = p;
-
-					syncClient(c);
+					newPlayer = new Player();
+					c.player = newPlayer;
 				}
 				break;
 			}
@@ -136,56 +139,41 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 
 		if (exists) {
 			log.log(Level.INFO, "Attempting to add a client that already exists");
-		} else {
-			// create a player reference for this client
-			// so server can determine position
-			Player p = new Player();
-			p.setName(client.getClientName());
-			p.setId(clients.size());
-
-			client.sendTeamInfo(p.getId() % 2, p.getName());
-
-			// add Player and Client reference to ClientPlayer object reference
-			ClientPlayer cp = new ClientPlayer(client, p);
-			clients.add(cp);// this is a "merged" list of Clients (ServerThread) and Players (Player)
-			// objects
-
-			// that's so we don't have to keep track of the same client in two different
-			// list locations
-			syncClient(cp);
-
 		}
-	}
 
-	private void setPlayerInfo(ClientPlayer c) {
-		c.player.setId(clients.indexOf(c));
-		c.client.sendId(c.player.getId());
-		teamAssign(c);
-	}
-
-	private void syncClient(ClientPlayer cp) {
-		if (cp.client.getClientName() != null) {
-			cp.client.sendClearList();
-			sendConnectionStatus(cp.client, true, "joined the room " + getName(), cp.player.getId());
-
-			setPlayerInfo(cp);
-
-			// calculate random start position
-			Point startPos = Room.getRandomStartPosition();
-			cp.player.setPosition(startPos);
-			// tell our client of our server determined position
-			cp.client.sendPosition(cp.client.getClientName(), startPos);
-			// tell everyone else about our server determiend position
-			sendPositionSync(cp.client, startPos);
-			// get the list of connected clients (for ui panel)
-			updateClientList(cp.client);
-			// get dir/pos of existing players
-			updatePlayers(cp.client);
-			//Disable all player gameobjects when we add a client, for now
-			//At some point I should filter out extra players after a game begins
-			//into spectators
-			broadcastSetPlayersInactive();
+		if (newPlayer == null) {
+			newPlayer = new Player();
 		}
+		newPlayer.setName(client.getClientName());
+		newPlayer.setId(clients.size());
+		newPlayer.setHP(MAX_HP);
+		ClientPlayer cp = new ClientPlayer(client, newPlayer);
+		clients.add(cp);
+		if (roomId < 0) {
+			return;
+		}
+		// next few lines sync name and id
+		// this one we need to send separately since we're not on the client list yet
+		// client.sendConnectionStatus(client.getClientName(), true, "joined the room "
+		// + getName(), newPlayer.getId());
+		client.sendClearList();
+		sendConnectionStatus(client, true, "joined the room " + getName(), newPlayer.getId());
+		// this happens before we're added to the clients list
+		newPlayer.setTeam(newPlayer.getId() % 2 == 0 ? TEAM_A : TEAM_B);
+		syncTeamSelfAndBroadcast(client, newPlayer);
+
+		client.sendBoundary(gameAreaSize);
+		Point startPos = Room.getRandomStartPosition();
+		newPlayer.setPosition(startPos);
+		client.sendPosition(newPlayer.getId(), startPos);
+		sendPositionSync(newPlayer.getId(), startPos);
+		updateClientList(client);
+		updatePlayers(client);
+
+		// ClientPlayer cp = new ClientPlayer(client, newPlayer);
+		// clients.add(cp);
+		broadcastSetPlayersInactive();
+
 	}
 
 	/***
@@ -200,24 +188,15 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		while (iter.hasNext()) {
 			ClientPlayer c = iter.next();
 			if (c.client != client) {
-				boolean messageSent = client.sendDirection(c.client.getClientName(), c.player.getDirection());
+				client.sendConnectionStatus(c.player.getName(), true, null, c.player.getId());
+				boolean messageSent = client.sendDirection(c.player.getId(), c.player.getDirection());
 				if (messageSent) {
-					if (client.sendPosition(c.client.getClientName(), c.player.getPosition())) {
-						if (client.sendTeamInfo(c.player.getTeam(), c.client.getClientName())) {
-							syncTeams(c);
+					if (client.sendPosition(c.player.getId(), c.player.getPosition())) {
+						if (client.sendTeamInfo(c.player.getName(), c.player.getTeam())) {
+							// everything should be synced
 						}
 					}
 				}
-			}
-		}
-	}
-
-	private void syncTeams(ClientPlayer current) {
-		Iterator<ClientPlayer> clientIter = clients.iterator();
-		while (clientIter.hasNext()) {
-			ClientPlayer cp = clientIter.next();
-			if (cp != current) {
-				current.client.sendTeamInfo(cp.player.getTeam(), cp.client.getClientName());
 			}
 		}
 	}
@@ -232,8 +211,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		while (iter.hasNext()) {
 			ClientPlayer c = iter.next();
 			if (c.client != client) {
-				boolean messageSent = client.sendConnectionStatus(c.client.getClientName(), true, null,
-				c.player.getId());
+				client.sendConnectionStatus(c.client.getClientName(), true, null, c.player.getId());
 			}
 		}
 	}
@@ -333,7 +311,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 					response = message;
 					break;
 				}
-			}else {
+			} else {
 				response = message;
 			}
 		} catch (Exception e) {
@@ -417,6 +395,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		// first we'll find the clientPlayer that sent their direction
 		// and update the server-side instance of their direction
 		Iterator<ClientPlayer> iter = clients.iterator();
+		Player p = null;
 		while (iter.hasNext()) {
 			ClientPlayer client = iter.next();
 			// update only our server reference for this client
@@ -424,24 +403,25 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			// move in sync)
 			if (client.client == sender) {
 				changed = client.player.setDirection(dir.x, dir.y);
+				p = client.player;
 				break;
 			}
 		}
 		// if the direction is "changed" (it should be, but check anyway)
 		// then we'll broadcast the change in direction to all clients
 		// so their local movement reflects correctly
-		if (changed) {
+		if (changed && p != null) {
 			iter = clients.iterator();
 			while (iter.hasNext()) {
 				ClientPlayer client = iter.next();
-				boolean messageSent = client.client.sendDirection(sender.getClientName(), dir);
-					
+				boolean messageSent = client.client.sendDirection(p.getId(), dir);
+
 				if (!messageSent) {
 					iter.remove();
 					log.log(Level.INFO, "Removed client " + client.client.getId());
 				}
 			}
-			
+
 		}
 	}
 
@@ -451,18 +431,18 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	 * @param sender
 	 * @param pos
 	 */
-	protected void sendPositionSync(ServerThread sender, Point pos) {
+	protected void sendPositionSync(int clientId, Point pos) {
 		Iterator<ClientPlayer> iter = clients.iterator();
 		while (iter.hasNext()) {
 			ClientPlayer client = iter.next();
-			boolean messageSent = client.client.sendPosition(sender.getClientName(), pos);
+			boolean messageSent = client.client.sendPosition(clientId, pos);
 			if (!messageSent) {
 				iter.remove();
 				log.log(Level.INFO, "Removed client " + client.client.getId());
 			}
 		}
 	}
-	
+
 	protected void sendSyncProjectile(Projectile proj) {
 		Iterator<ClientPlayer> iter = clients.iterator();
 		while (iter.hasNext()) {
@@ -470,12 +450,12 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			client.client.sendSyncProjectile(proj);
 		}
 	}
-	
+
 	protected void sendRemoveProjectile(int id) {
 		Iterator<ClientPlayer> iter = clients.iterator();
 		while (iter.hasNext()) {
 			ClientPlayer client = iter.next();
-			
+
 			client.client.syncRemoveProjectile(id);
 		}
 	}
@@ -531,12 +511,13 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			// check if it's worth sycning the position
 			// again this is to save unnecessary data transfer
 			if (cp.player.changedPosition()) {
-				sendPositionSync(cp.client, cp.player.getPosition());
+				sendPositionSync(cp.player.getId(), cp.player.getPosition());
 			}
 		}
 
 	}
-	//TODO fix update
+
+	// TODO fix update
 	@Override
 	public void update() {
 		if (state != GameState.GAME)
@@ -545,52 +526,59 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		prevNS = currentNS;
 		currentNS = System.nanoTime();
 		timeLeft -= (currentNS - prevNS);
-		
-		if((timeLeft / MINUTE_NANO) < minutesLeft && state == GameState.GAME) {
+
+		if ((timeLeft / MINUTE_NANO) < minutesLeft && state == GameState.GAME) {
 			minutesLeft--;
 			broadcastTimeLeft();
 		}
-		
+
 		if (timeLeft <= 0 && state != GameState.END) {
 			state = GameState.END;
 			broadcastGameState();
 			broadcastSetPlayersInactive();
 			return;
 		}
-		
+
 		Iterator<Projectile> pIter = projectiles.iterator();
 		while (pIter.hasNext()) {
 			Projectile p = pIter.next();
-			
-			if(p != null && p.isActive()) {
+
+			if (p != null && p.isActive()) {
 				int projId = p.getId();
-				
+
 				p.move();
-				
+
 				List<Integer> targetIds = p.getCollidingPlayers(clients);
-				if(p.passedScreenBounds(gameAreaSize)) {
+				if (p.passedScreenBounds(gameAreaSize)) {
 					ClientPlayer cp = getClientPlayerById(projId);
 					cp.setHasFired(false);
 					sendRemoveProjectile(projId);
 					pIter.remove();
-				}
-				else if(targetIds.size() > 0) {
-					for(int id : targetIds) {
+				} else if (targetIds.size() > 0) {
+					for (int id : targetIds) {
 						ClientPlayer cp = getClientPlayerById(id);
-						cp.player.setHP(cp.player.getHP()-1);
+						cp.player.setHP(cp.player.getHP() - 1);
 						broadcastHP(cp.player.getId(), cp.player.getHP());
 						log.log(Level.INFO, cp.client.getClientName() + " was hit!");
-						sendMessage(cp.client, cp.client.getClientName() + " was hit!");
+						if(!cp.player.HealthCheck()) {
+							broadcastDeadPlayer(cp);
+							sendMessage(cp.client, cp.client.getClientName() + " is out!");
+						}else {
+							sendMessage(cp.client, cp.client.getClientName() + " was hit!");
+						}
 					}
 
 					ClientPlayer cp = getClientPlayerById(projId);
+
+					
+						
 					cp.setHasFired(false);
 					sendRemoveProjectile(projId);
 					pIter.remove();
 				}
 			}
 		}
-		
+
 		Iterator<ClientPlayer> iter = clients.iterator();
 		while (iter.hasNext()) {
 			ClientPlayer p = iter.next();
@@ -598,49 +586,61 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 				// have the server-side player calc their potential new position
 				p.player.move();
 				int passedBounds = p.player.passedScreenBounds(gameAreaSize);
-				
-				switch(passedBounds) {
-					case 1: p.player.setPosition(new Point(p.player.getPosition().x, p.player.getSize().y));//North
-						break;
-					
-					case 2: p.player.setPosition(new Point(gameAreaSize.width - p.player.getSize().x, p.player.getPosition().y));//East
-						break;	
-					
-					case 3: p.player.setPosition(new Point(p.player.getPosition().x, gameAreaSize.height - p.player.getSize().y));//South
-						break;
-					
-					case 4: p.player.setPosition(new Point(p.player.getSize().x, p.player.getPosition().y));//West
-						break;
+
+				switch (passedBounds) {
+				case 1:
+					p.player.setPosition(new Point(p.player.getPosition().x, p.player.getSize().y));// North
+					break;
+
+				case 2:
+					p.player.setPosition(
+							new Point(gameAreaSize.width - p.player.getSize().x, p.player.getPosition().y));// East
+					break;
+
+				case 3:
+					p.player.setPosition(
+							new Point(p.player.getPosition().x, gameAreaSize.height - p.player.getSize().y));// South
+					break;
+
+				case 4:
+					p.player.setPosition(new Point(p.player.getSize().x, p.player.getPosition().y));// West
+					break;
 				}
-				
-				if(passedBounds > 0) {
-					sendPositionSync(p.client, p.player.getPosition());
+
+				if (passedBounds > 0) {
+					sendPositionSync(p.player.getId(), p.player.getPosition());
 				}
-				
-				
+
 				// determine if we should sync this player's position to all other players
 				checkPositionSync(p);
 			}
 		}
 	}
-	
+
 	private ClientPlayer getClientPlayerById(int playerId) {
 		Iterator<ClientPlayer> iter = clients.iterator();
 		while (iter.hasNext()) {
 			ClientPlayer p = iter.next();
 			if (p != null) {
-				if(p.player.getId() == playerId) {
+				if (p.player.getId() == playerId) {
 					return p;
 				}
-			}	
+			}
 		}
-		
+
 		return null;
 	}
 	
+	private void broadcastDeadPlayer(ClientPlayer cp) {
+		Iterator<ClientPlayer> iter = clients.iterator();
+		while (iter.hasNext()) {
+			ClientPlayer c = iter.next();
+			c.player.setActive(false);
+			c.client.sendDisablePlayer(cp.player.getId(), cp.client.getClientName());
+		}
+	}
 
-
-	private void broadcastHP(int id, int hp) {	
+	private void broadcastHP(int id, int hp) {
 		Iterator<ClientPlayer> iter = clients.iterator();
 		while (iter.hasNext()) {
 			ClientPlayer c = iter.next();
@@ -653,10 +653,10 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		while (iter.hasNext()) {
 			ClientPlayer c = iter.next();
 			c.client.sendTimeLeft(timeLeft);
-			log.log(Level.INFO, timeLeft/MINUTE_NANO + " minutes left");
+			log.log(Level.INFO, timeLeft / MINUTE_NANO + " minutes left");
 		}
 	}
-	
+
 	private void broadcastGameState() {
 		Iterator<ClientPlayer> iter = clients.iterator();
 		while (iter.hasNext()) {
@@ -664,7 +664,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			c.client.sendGameState(state);
 			log.log(Level.INFO, "Sending client " + c.player.getId() + " game status " + state.toString());
 		}
-	}	
+	}
 
 	private void broadcastSetPlayersInactive() {
 		Iterator<ClientPlayer> iter = clients.iterator();
@@ -731,17 +731,15 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		Iterator<ClientPlayer> iter = clients.iterator();
 		while (iter.hasNext()) {
 			ClientPlayer cp = iter.next();
-			
-			if(cp.client == client && !cp.hasFired()) {
-				cp.setHasFired(true);	
+
+			if (cp.client == client && !cp.hasFired()) {
+				cp.setHasFired(true);
 				int pt = cp.player.getTeam();
-				int xdir = pt == 1 ? -1: 1;
-				
-				Projectile newProj = new Projectile(pt,
-						cp.player.getId(),
-						xdir,
-						new Point(cp.player.getPosition().x + BULLET_RADIUS, cp.player.getPosition().y + BULLET_RADIUS));
-				
+				int xdir = pt == 1 ? -1 : 1;
+
+				Projectile newProj = new Projectile(pt, cp.player.getId(), xdir,
+						new Point(cp.player.getPosition().x, cp.player.getPosition().y));
+
 				projectiles.add(newProj);
 
 				sendSyncProjectile(newProj);

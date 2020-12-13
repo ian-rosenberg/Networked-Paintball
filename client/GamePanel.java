@@ -38,8 +38,10 @@ public class GamePanel extends BaseGamePanel implements Event {
 	private boolean canFire = true;
 	private final static Logger log = Logger.getLogger(GamePanel.class.getName());
 	private final static long ROUND_TIME = TimeUnit.MINUTES.toNanos(5);// Round time is 5 min in nanoseconds
-	public final static long MINUTE = TimeUnit.MINUTES.toNanos(1);// 1 second in nanoseconds, sources say this is more accurate than ms
-	private static final int TEXT_FACTOR = 6;//Prof said a size of 3 was acceptable for 12pt font, so I'll double for 24pt font
+	public final static long MINUTE = TimeUnit.MINUTES.toNanos(1);// 1 second in nanoseconds, sources say this is more
+	// accurate than ms
+	private static final int TEXT_FACTOR = 6;// Prof said a size of 3 was acceptable for 12pt font, so I'll double for
+	// 24pt font
 	private static long timeLeft = ROUND_TIME;
 	private static int teamBScore = 0;
 	private static int teamAScore = 0;
@@ -69,7 +71,10 @@ public class GamePanel extends BaseGamePanel implements Event {
 		if (!exists) {
 			Player p = new Player();
 			p.setName(clientName);
+			System.out.println("Setting up id " + id);
+			p.setId(id);
 			players.add(p);
+			System.out.println("New player count: " + players.size());
 			// want .equals here instead of ==
 			// https://www.geeksforgeeks.org/difference-equals-method-java/
 			if (clientName.equals(playerUsername)) {
@@ -80,7 +85,7 @@ public class GamePanel extends BaseGamePanel implements Event {
 	}
 
 	@Override
-	public void onClientDisconnect(String clientName, String message) {
+	public synchronized void onClientDisconnect(String clientName, String message) {
 
 		// TODO Auto-generated method stub
 		System.out.println("Disconnected on Game Panel: " + clientName);
@@ -166,7 +171,7 @@ public class GamePanel extends BaseGamePanel implements Event {
 			if (!KeyStates.A && !KeyStates.D) {
 				x = 0;
 			}
-			if(KeyStates.FIRE && canFire ) {
+			if (KeyStates.FIRE && canFire) {
 				SocketClient.INSTANCE.sendShootBullet();
 				canFire = false;
 			}
@@ -184,7 +189,7 @@ public class GamePanel extends BaseGamePanel implements Event {
 	 * This is just an estimate/hint until we receive a position sync from the
 	 * server
 	 */
-	private void localMovePlayers() {
+	private synchronized void localMovePlayers() {
 		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
 			Player p = iter.next();
@@ -207,7 +212,7 @@ public class GamePanel extends BaseGamePanel implements Event {
 			}
 		}
 	}
-	
+
 	@Override
 	public void lateUpdate() {
 		// stuff that should happen at a slightly different time than stuff in normal
@@ -218,19 +223,23 @@ public class GamePanel extends BaseGamePanel implements Event {
 	@Override
 	public synchronized void draw(Graphics g) {
 		setBackground(Color.BLACK);
-		drawBorder(g);
-		((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		drawPlayers(g);
-		drawProjectiles(g);
-		drawText(g);
+		try {
+			drawBorder(g);
+			((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			drawPlayers(g);
+			drawProjectiles(g);
+			drawText(g);
+		} catch (Exception e) {
+
+		}
 	}
 
 	private void drawBorder(Graphics g) {
-		if(boundary != null) {
+		if (boundary != null) {
 			g.setColor(Color.WHITE);
-			g.drawRect(5,5,boundary.width-10, boundary.height-10);
+			g.drawRect(5, 5, boundary.width - 10, boundary.height - 10);
 		}
-		
+
 	}
 
 	private synchronized void drawPlayers(Graphics g) {
@@ -241,8 +250,8 @@ public class GamePanel extends BaseGamePanel implements Event {
 				p.draw(g);
 			}
 		}
-	}	
-	
+	}
+
 	private synchronized void drawProjectiles(Graphics g) {
 		Iterator<Projectile> iter = localBullets.iterator();
 		while (iter.hasNext()) {
@@ -264,10 +273,9 @@ public class GamePanel extends BaseGamePanel implements Event {
 			String timeLeftStr = "Time Left: " + (timeLeft / MINUTE) + "min left!";
 			g.setColor(Color.WHITE);
 			g.setFont(new Font("Monospaced", Font.BOLD, 24));
-			g.drawString(timeLeftStr,
-					boundary.width / 2, 25);
-			g.drawString("Team A Score: "+ teamAScore, boundary.width / 3, 50);
-			g.drawString("Team B Score: "+ teamBScore, (int)(boundary.width * 0.667), 50);
+			g.drawString(timeLeftStr, boundary.width / 2, 25);
+			g.drawString("Team A Score: " + teamAScore, boundary.width / 3, 50);
+			g.drawString("Team B Score: " + teamBScore, (int) (boundary.width * 0.667), 50);
 		} else {
 			String notStartedStr = "Game has not started yet!";
 			int offset = (boundary.width / 2) - (notStartedStr.length() * TEXT_FACTOR);
@@ -315,13 +323,13 @@ public class GamePanel extends BaseGamePanel implements Event {
 	}
 
 	@Override
-	public void onSyncDirection(String clientName, Point direction) {
+	public synchronized void onSyncDirection(int clientId, Point direction) {
 		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
 			Player p = iter.next();
-			if (p != null && p.getName().equalsIgnoreCase(clientName)) {
+			if (p != null && p.getId() == clientId) {
 				p.setDirectionLine(direction);
-				System.out.println("Syncing direction: " + clientName);
+				// System.out.println("Syncing direction: " + clientName);
 				p.setDirection(direction.x, direction.y);
 				System.out.println("From: " + direction);
 				System.out.println("To: " + p.getDirection());
@@ -331,13 +339,13 @@ public class GamePanel extends BaseGamePanel implements Event {
 	}
 
 	@Override
-	public void onSyncPosition(String clientName, Point position) {
-		System.out.println("Got position for " + clientName);
+	public synchronized void onSyncPosition(int clientId, Point position) {
+		// System.out.println("Got position for " + clientName);
 		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
 			Player p = iter.next();
-			if (p != null && p.getName().equalsIgnoreCase(clientName)) {
-				System.out.println(clientName + " set " + position);
+			if (p != null && p.getId() == clientId) {
+				// System.out.println(clientName + " set " + position);
 				p.setPosition(position);
 				break;
 			}
@@ -357,16 +365,18 @@ public class GamePanel extends BaseGamePanel implements Event {
 
 	@Override
 	public void onSetId(int id) {
-		for (Player player : players) {
-
-			player.setId(id);
-		}
+		/*
+		 * for (Player player : players) {
+		 * 
+		 * player.setId(id); }
+		 */
 	}
 
 	@Override
 	public void onSetPlayerColor(int teamId, String clientName) {
 		for (Player player : players) {
 			if (player.getName() == clientName) {
+				player.setTeam(teamId);
 				if (teamId == 1) {
 					player.setColor(Color.pink);
 				} else {
@@ -394,9 +404,12 @@ public class GamePanel extends BaseGamePanel implements Event {
 
 	@Override
 	public void onSetPlayerActivity(boolean bool) {
+		System.out.println("Marking players " + players.size() + "" + (bool ? "enabled" : "disabled"));
 		for (Player player : players) {
+			System.out.println(player.getName() + "-" + player.getId() + " set");
 			player.setActive(bool);
 		}
+		System.out.println("Done setting enable/disable");
 
 	}
 
@@ -419,9 +432,9 @@ public class GamePanel extends BaseGamePanel implements Event {
 	public void onSetBulletPosition(int teamId, int bulletId, int xDir, Point newPos) {
 		boolean newBullet = true;
 		Iterator<Projectile> pIter = localBullets.iterator();
-		while(pIter.hasNext()) {
+		while (pIter.hasNext()) {
 			Projectile proj = pIter.next();
-			if(proj.getId() == bulletId) {
+			if (proj.getId() == bulletId) {
 				proj.setDirX(xDir);
 				proj.setTeam(teamId);
 				proj.setPosition(newPos);
@@ -429,22 +442,22 @@ public class GamePanel extends BaseGamePanel implements Event {
 				return;
 			}
 		}
-		
-		if(newBullet) {
+
+		if (newBullet) {
 			Projectile newProjectile = new Projectile(teamId, bulletId, xDir, newPos);
-		
+
 			localBullets.add(newProjectile);
 		}
-		
+
 	}
 
 	@Override
 	public void onRemoveBullet(int id) {
 		Iterator<Projectile> pIter = localBullets.iterator();
-		while(pIter.hasNext()) {
+		while (pIter.hasNext()) {
 			Projectile proj = pIter.next();
-			if(proj.getId() == id) {
-				if(proj.getId() == myPlayer.getId()) {
+			if (proj.getId() == id) {
+				if (proj.getId() == myPlayer.getId()) {
 					canFire = true;
 				}
 				pIter.remove();
@@ -455,17 +468,26 @@ public class GamePanel extends BaseGamePanel implements Event {
 
 	@Override
 	public void onSetHP(Point idHP) {
-		if(idHP.x == -1) {
+		if (idHP.x == -1) {
 			for (Player player : players) {
 				player.setHP(idHP.y);
 			}
-		}else{
+		} else {
 			for (Player player : players) {
-				if(player.getId() == idHP.x)
-				{
+				if (player.getId() == idHP.x) {
 					player.setHP(idHP.y);
 					return;
 				}
+			}
+		}
+	}
+
+	@Override
+	public void onDisablePlayer(int id, String clientName) {
+		for (Player player : players) {
+			if (player.getId() == id) {
+				player.setActive(false);
+				return;
 			}
 		}
 	}

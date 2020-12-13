@@ -12,7 +12,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import core.Projectile;
-import server.Payload.ProjectileInfo;
 
 public class ServerThread extends Thread {
 	private Socket client;
@@ -83,36 +82,36 @@ public class ServerThread extends Thread {
 		return sendPayload(payload);
 	}
 
-	protected boolean sendDirection(String clientName, Point dir) {
+	protected boolean sendDirection(int clientId, Point dir) {
 		Payload payload = new Payload();
 		payload.setPayloadType(PayloadType.SYNC_DIRECTION);
-		payload.setClientName(clientName);
+		// payload.setClientName(clientName);
+		payload.setClientId(clientId);
 		payload.setPoint(dir);
 		return sendPayload(payload);
 	}
 
-	protected boolean sendPosition(String clientName, Point pos) {
+	protected boolean sendPosition(int clientId, Point pos) {
 		Payload payload = new Payload();
 		payload.setPayloadType(PayloadType.SYNC_POSITION);
-		payload.setClientName(clientName);
+		// payload.setClientName(clientName);
+		payload.setClientId(clientId);
 		payload.setPoint(pos);
 		return sendPayload(payload);
 	}
 
-	protected boolean sendId(int idNum) {
-		Payload payload = new Payload();
-		payload.setPayloadType(PayloadType.ASSIGN_ID);
-		payload.setClientName(clientName);
-		payload.setNumber(idNum);
-		return sendPayload(payload);
-	}
-
-	protected boolean sendTeamInfo(int teamId, String clientName) {
+	/*
+	 * protected boolean sendId(int idNum, String clientName) { Payload payload =
+	 * new Payload(); payload.setPayloadType(PayloadType.ASSIGN_ID);
+	 * payload.setClientName(clientName); // payload.setNumber(idNum);
+	 * payload.setClientId(idNum); return sendPayload(payload); }
+	 */
+	// keep as client name due to being used on clientUI
+	protected boolean sendTeamInfo(String clientName, int teamId) {
 		Payload payload = new Payload();
 		payload.setPayloadType(PayloadType.SET_TEAM_INFO);
+		payload.setClientName(clientName);// syncs both ClientUI and GamePanel
 		payload.setNumber(teamId);
-		payload.setClientName(clientName);
-
 		return sendPayload(payload);
 	}
 
@@ -120,12 +119,11 @@ public class ServerThread extends Thread {
 		Payload payload = new Payload();
 		if (isConnect) {
 			payload.setPayloadType(PayloadType.CONNECT);
-			payload.setMessage(message);
-			payload.setNumber(userId);
 		} else {
 			payload.setPayloadType(PayloadType.DISCONNECT);
-			payload.setMessage(message);
 		}
+		payload.setMessage(message);
+		payload.setClientId(userId);
 		payload.setClientName(clientName);
 		return sendPayload(payload);
 	}
@@ -143,7 +141,6 @@ public class ServerThread extends Thread {
 		payload.setMessage(room);
 		return sendPayload(payload);
 	}
-
 
 	protected boolean sendActiveStatus(boolean b) {
 		Payload payload = new Payload();
@@ -179,7 +176,6 @@ public class ServerThread extends Thread {
 		payload.setPoint(new Point(gameAreaSize.width, gameAreaSize.height));
 		return sendPayload(payload);
 	}
-	
 
 	protected boolean syncRemoveProjectile(int id) {
 		Payload payload = new Payload();
@@ -187,15 +183,22 @@ public class ServerThread extends Thread {
 		payload.setNumber(id);
 		return sendPayload(payload);
 	}
-	
+
 	protected boolean sendHP(int id, int hp) {
 		Payload payload = new Payload();
 		payload.setPayloadType(PayloadType.SET_HP);
 		payload.setPoint(new Point(id, hp));
 		return sendPayload(payload);
 	}
-		
-	private boolean sendPayload(Payload p) {
+	
+	protected boolean sendDisablePlayer(int id, String clientName) {
+		Payload payload = new Payload();
+		payload.setPayloadType(PayloadType.DISABLE_PLAYER);
+		payload.setDisablePayload(id, clientName);
+		return sendPayload(payload);
+	}
+
+	private synchronized boolean sendPayload(Payload p) {
 		try {
 			out.writeObject(p);
 			return true;
@@ -237,7 +240,7 @@ public class ServerThread extends Thread {
 			break;
 		case SYNC_DIRECTION:
 			currentRoom.sendDirectionSync(this, p.getPoint());
-			
+
 			break;
 		case SYNC_POSITION:
 			// In my sample client will not be sharing their position

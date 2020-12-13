@@ -22,5 +22,6 @@ public enum PayloadType {
 	TIMER, 
 	SYNC_BULLET,
 	DESTROY_BULLET,
-	SET_HP,
+	SET_HP, 
+	DISABLE_PLAYER,
 }

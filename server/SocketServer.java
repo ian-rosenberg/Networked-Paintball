@@ -26,7 +26,7 @@ public class SocketServer {
 			isRunning = true;
 			// create a lobby on start
 			Room.setServer(this);
-			lobby = new Room(LOBBY, -1);// , this);
+			lobby = new Room(LOBBY, true, 0);// , this);
 			rooms.add(lobby);
 			while (SocketServer.isRunning) {
 				try {
