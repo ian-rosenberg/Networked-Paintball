@@ -198,7 +198,7 @@ public class ServerThread extends Thread {
 		return sendPayload(payload);
 	}
 	
-	protected boolean sendDisablePlayer(int teamAScore, int teamBScore) {
+	protected boolean setScores(int teamAScore, int teamBScore) {
 		Payload payload = new Payload();
 		payload.setPayloadType(PayloadType.SET_SCORE);
 		payload.setScorePayload(teamAScore, teamBScore);

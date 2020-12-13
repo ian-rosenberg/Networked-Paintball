@@ -555,6 +555,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 				List<Integer> targetIds = p.getCollidingPlayers(clients);
 				if (p.passedScreenBounds(gameAreaSize)) {
 					ClientPlayer cp = getClientPlayerById(projId);
+
 					cp.setHasFired(false);
 					sendRemoveProjectile(projId);
 					pIter.remove();
@@ -608,11 +609,9 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 							sendMessage(cp.client, cp.client.getClientName() + " was hit!");
 						}
 					}
-
-					ClientPlayer cp = getClientPlayerById(projId);
-
 					
-						
+					ClientPlayer cp = getClientPlayerById(projId);			
+					
 					cp.setHasFired(false);
 					sendRemoveProjectile(projId);
 					pIter.remove();
@@ -676,15 +675,16 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		Iterator<ClientPlayer> iter = clients.iterator();
 		while (iter.hasNext()) {
 			ClientPlayer c = iter.next();
-			c.client.sendDisablePlayer(teamAScore, teamBScore);
+			c.client.setScores(teamAScore, teamBScore);
 		}
 	}
 	
 	private void broadcastDeadPlayer(ClientPlayer cp) {
+		cp.player.setActive(false);
+			
 		Iterator<ClientPlayer> iter = clients.iterator();
 		while (iter.hasNext()) {
 			ClientPlayer c = iter.next();
-			c.player.setActive(false);
 			c.client.sendDisablePlayer(cp.player.getId(), cp.client.getClientName());
 		}
 	}
