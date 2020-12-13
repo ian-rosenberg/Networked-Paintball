@@ -40,4 +40,6 @@ public interface Event {
     void onRemoveBullet(int id);
 
     void onSetHP(Point idHP);
+
+	void onDisablePlayer(int id, String clientName);
 }

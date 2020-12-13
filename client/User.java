@@ -37,11 +37,20 @@ public class User extends JPanel {
 	public void setUserColor(int teamId) {
 		if (teamId == 1) {
 			textColor = "#FF69B4";
-		} else {
+		} else if (teamId == 2) {
 			textColor = "green";
 		}
-
-		nameField.setText("<span style='color:" + textColor + "'>" + name + "</span>");
+		else {
+			textColor = "gray";
+		}
+		
+		if(textColor.equalsIgnoreCase("gray")) {
+			nameField.setText("<span style='color:" + textColor + "'>" + name + "[OUT]</span>");
+		}
+		else {
+			nameField.setText("<span style='color:" + textColor + "'>" + name + "</span>");
+		}
+		
 		repaint();
 	}
 }
