@@ -562,12 +562,12 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		}
 
 		if (timeLeft <= 0 && state != GameState.END) {
-			state = GameState.END;
-			broadcastGameState();
-			broadcastSetPlayersInactive();
+			EndGame();
+			projectiles.clear();
 			return;
 		}
 
+		
 		Iterator<Projectile> pIter = projectiles.iterator();
 		while (pIter.hasNext()) {
 			Projectile p = pIter.next();
@@ -603,32 +603,11 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 							sendMessage(cp.client, cp.client.getClientName() + " is out!");
 							
 							if(teamAPlayers == teamBScore || teamBPlayers == teamAScore) {
-								state = GameState.END;
-								broadcastGameState();
-								broadcastSetPlayersInactive();
-								try {
-									TimeUnit.SECONDS.sleep(5L);
-								} catch (InterruptedException e) {
-									log.log(Level.INFO, "Sleeping for 5 seconds before moving back into Lobby.");
-								}
-								
-								state = GameState.LOBBY;
-								broadcastGameState();
-								teamAScore = 0;
-								teamBScore = 0;
-								
-								broadcastScores(teamAScore, teamBScore);
-								
-								Iterator<ClientPlayer> ite = clients.iterator();
-								while(ite.hasNext()) {
-									ClientPlayer cpReady = ite.next();
-									cpReady.player.setReady(false);
-								}
-								
-								teamAPlayers = 0;
-								teamBPlayers = 0;
+								EndGame();
 								
 								projectiles.clear();
+								
+								return;
 							}
 						}else {
 							sendMessage(cp.client, cp.client.getClientName() + " was hit!");
@@ -639,7 +618,8 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 					
 					cp.setHasFired(false);
 					sendRemoveProjectile(projId);
-					pIter.remove();
+					if(pIter != null)
+						pIter.remove();
 				}
 			}
 		}
@@ -680,6 +660,33 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 				checkPositionSync(p);
 			}
 		}
+	}
+
+	private void EndGame() {
+		state = GameState.END;
+		broadcastGameState();
+		broadcastSetPlayersInactive();
+		try {
+			TimeUnit.SECONDS.sleep(5L);
+		} catch (InterruptedException e) {
+			log.log(Level.INFO, "Sleeping for 5 seconds before moving back into Lobby.");
+		}
+		
+		state = GameState.LOBBY;
+		broadcastGameState();
+		teamAScore = 0;
+		teamBScore = 0;
+		
+		broadcastScores(teamAScore, teamBScore);
+		
+		Iterator<ClientPlayer> ite = clients.iterator();
+		while(ite.hasNext()) {
+			ClientPlayer cpReady = ite.next();
+			cpReady.player.setReady(false);
+		}
+		
+		teamAPlayers = 0;
+		teamBPlayers = 0;	
 	}
 
 	private ClientPlayer getClientPlayerById(int playerId) {
