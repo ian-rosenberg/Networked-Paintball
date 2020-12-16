@@ -29,8 +29,11 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	private final static int BULLET_RADIUS = 15;
 	private final int MAX_HP = 3;
 
-	private static int teamAScore = 0;
-	private static int teamBScore = 0;
+	private int teamAScore = 0;
+	private int teamBScore = 0;
+	
+	private int teamAPlayers = 0;
+	private int teamBPlayers = 0;
 	
 	// Commands
 	private final static String COMMAND_TRIGGER = "/";
@@ -97,9 +100,15 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		return null;
 	}
 
-	private static Point getRandomStartPosition() {
+	private static Point getStartPosition(int id) {
 		Point startPos = new Point();
-		startPos.x = (int) (Math.random() * gameAreaSize.width);
+		if(id % 2 == 0) {
+			startPos.x = gameAreaSize.width - 100;
+		}
+		else {
+			startPos.x = 100;
+		}
+		
 		startPos.y = (int) (Math.random() * gameAreaSize.height);
 		return startPos;
 	}
@@ -167,7 +176,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		syncTeamSelfAndBroadcast(client, newPlayer);
 
 		client.sendBoundary(gameAreaSize);
-		Point startPos = Room.getRandomStartPosition();
+		Point startPos = Room.getStartPosition(newPlayer.getId());
 		newPlayer.setPosition(startPos);
 		client.sendPosition(newPlayer.getId(), startPos);
 		sendPositionSync(newPlayer.getId(), startPos);
@@ -228,6 +237,11 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			ClientPlayer c = iter.next();
 			if (c.client == client) {
 				clientPlayer = c;
+				if(c.player.getId() % 2 == 0) {
+					teamAPlayers--;
+				}else {
+					teamBPlayers--;
+				}
 				iter.remove();
 				log.log(Level.INFO, "Removed client " + c.client.getClientName() + " from " + getName());
 			}
@@ -347,6 +361,17 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			}
 		}
 		if (ready >= total) {
+			
+			Iterator<ClientPlayer> cpIter = clients.iterator();
+			while(cpIter.hasNext()) {
+				ClientPlayer c = cpIter.next();
+				
+				if(c.player.getId() % 2 == 0) {
+					teamAPlayers++;
+				}else {
+					teamBPlayers++;
+				}
+			}
 			// start
 			System.out.println("Everyone's ready, let's do this!");
 			state = GameState.GAME;
@@ -574,36 +599,36 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 							}
 							
 							broadcastScores(teamAScore, teamBScore);
-							int teamAPlayers = 0;
-							int teamBPlayers = 0;
 							
 							sendMessage(cp.client, cp.client.getClientName() + " is out!");
 							
-							for(ClientPlayer c: clients) {
-								if(c.player.getTeam() == TEAM_A && c.player.getHP() <= 0) {
-									teamBPlayers++;
-								}
-								else if(c.player.getTeam() == TEAM_A && c.player.getHP() <= 0) {
-									teamAPlayers++;
-								}
-							}
-							
 							if(teamAPlayers == teamBScore || teamBPlayers == teamAScore) {
 								state = GameState.END;
-								projectiles.clear();
 								broadcastGameState();
 								broadcastSetPlayersInactive();
 								try {
 									TimeUnit.SECONDS.sleep(5L);
 								} catch (InterruptedException e) {
-									// TODO Auto-generated catch block
-									System.out.println("Sleeping for 5 seconds before moving back into Lobby.");
+									log.log(Level.INFO, "Sleeping for 5 seconds before moving back into Lobby.");
 								}
 								
 								state = GameState.LOBBY;
 								broadcastGameState();
+								teamAScore = 0;
+								teamBScore = 0;
 								
-								return;
+								broadcastScores(teamAScore, teamBScore);
+								
+								Iterator<ClientPlayer> ite = clients.iterator();
+								while(ite.hasNext()) {
+									ClientPlayer cpReady = ite.next();
+									cpReady.player.setReady(false);
+								}
+								
+								teamAPlayers = 0;
+								teamBPlayers = 0;
+								
+								projectiles.clear();
 							}
 						}else {
 							sendMessage(cp.client, cp.client.getClientName() + " was hit!");
@@ -618,7 +643,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 				}
 			}
 		}
-
+		
 		Iterator<ClientPlayer> iter = clients.iterator();
 		while (iter.hasNext()) {
 			ClientPlayer p = iter.next();
@@ -634,12 +659,12 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 
 				case 2:
 					p.player.setPosition(
-							new Point(gameAreaSize.width - p.player.getSize().x, p.player.getPosition().y));// East
+					new Point(gameAreaSize.width - p.player.getSize().x, p.player.getPosition().y));// East
 					break;
 
 				case 3:
 					p.player.setPosition(
-							new Point(p.player.getPosition().x, gameAreaSize.height - p.player.getSize().y));// South
+					new Point(p.player.getPosition().x, gameAreaSize.height - p.player.getSize().y));// South
 					break;
 
 				case 4:

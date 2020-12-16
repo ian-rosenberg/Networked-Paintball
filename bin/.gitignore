@@ -1,19 +1,4 @@
 test.txt
 
-/.classpath
-/.gitignore
-/.project
-/.settings/
-/Capture.PNG
-/Homework.class
-/Homework2.class
-/README.MD
-/RecursionToLoop.class
-/client/
-/core/
-/hw1.PNG
-/hw2.PNG
-/numberGuesserSave.txt
-/project/
 /server/
-/todo.txt
+/client/
