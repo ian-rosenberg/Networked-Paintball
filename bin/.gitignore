@@ -3,6 +3,7 @@ test.txt
 /.classpath
 /.gitignore
 /.project
+/.settings/
 /Capture.PNG
 /Homework.class
 /Homework2.class
@@ -15,5 +16,4 @@ test.txt
 /numberGuesserSave.txt
 /project/
 /server/
-/utils/
 /todo.txt
