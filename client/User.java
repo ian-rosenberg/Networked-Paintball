@@ -6,6 +6,7 @@ import javax.swing.JPanel;
 
 public class User extends JPanel {
 	private int id = -1;
+	private int teamId = -1;
 	private String name;
 	private JEditorPane nameField;
 	private String textColor;
@@ -52,5 +53,13 @@ public class User extends JPanel {
 		}
 		
 		repaint();
+	}
+
+	public int getTeamId() {
+		return teamId;
+	}
+
+	public void setTeamId(int teamId) {
+		this.teamId = teamId;
 	}
 }

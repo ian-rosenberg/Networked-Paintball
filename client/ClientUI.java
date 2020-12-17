@@ -41,6 +41,10 @@ public class ClientUI extends JFrame implements Event {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+
+	private static final int TEAM_A = 1;
+	private static final int TEAM_B = 2;
+	
 	boolean inServer = false;
 	CardLayout card;
 	ClientUI self;
@@ -221,6 +225,9 @@ public class ClientUI extends JFrame implements Event {
 
 	void addClient(String name, int id) {
 		User u = new User(name, id);
+		
+		u.setTeamId(id % 2 == 0 ? TEAM_A : TEAM_B);
+		
 		Dimension p = new Dimension(userPanel.getSize().width, 30);
 		u.setPreferredSize(p);
 		u.setMinimumSize(p);
@@ -432,8 +439,11 @@ public class ClientUI extends JFrame implements Event {
 
 	@Override
 	public void onSetGameState(GameState state) {
-		// TODO Auto-generated method stub
-
+		if(state == GameState.LOBBY) {
+			for(User user: users) {
+				user.setUserColor(user.getTeamId());
+			}
+		}
 	}
 
 	@Override
