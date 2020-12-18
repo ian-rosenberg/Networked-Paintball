@@ -12,6 +12,10 @@ import java.util.List;
 import server.ClientPlayer;
 
 public class Projectile extends GameObject {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8008661983395221521L;
 	private int radius = 15;
 	private int dirX = 0;
 
@@ -41,7 +45,7 @@ public class Projectile extends GameObject {
 			ClientPlayer cp = cpIter.next();
 
 			if (Math.hypot(position.x - cp.player.position.x, position.y - cp.player.position.y) < radius
-					+ cp.player.getSize().x / 2 && cp.player.getTeam() != team) {
+					&& cp.player.getTeam() != team) {
 				targetIds.add(cp.player.getId());
 			}
 		}
@@ -76,5 +80,13 @@ public class Projectile extends GameObject {
 		previousPosition.x = position.x;
 		previousPosition.y = position.y;
 		position.x += (speed.x * dirX);
+	}
+	
+	public void setRadius(int r) {
+		this.radius = r;
+	}
+	
+	public int getRadius() {
+		return radius;
 	}
 }

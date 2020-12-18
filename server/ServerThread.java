@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import core.Grenade;
 import core.Projectile;
 
 public class ServerThread extends Thread {
@@ -169,6 +170,13 @@ public class ServerThread extends Thread {
 		payload.setProjectileInfo(proj.getTeam(), proj.getId(), proj.getDirX(), proj.getPosition());
 		return sendPayload(payload);
 	}
+	
+	protected boolean sendSyncGrenade(Grenade proj) {
+		Payload payload = new Payload();
+		payload.setPayloadType(PayloadType.SYNC_GRENADE);
+		payload.setGrenadeInfo(proj.getTeam(), proj.getId(), proj.getDirX(), proj.getPosition(), proj.getRadius());
+		return sendPayload(payload);
+	}
 
 	protected boolean sendBoundary(Dimension gameAreaSize) {
 		Payload payload = new Payload();
@@ -180,6 +188,13 @@ public class ServerThread extends Thread {
 	protected boolean syncRemoveProjectile(int id) {
 		Payload payload = new Payload();
 		payload.setPayloadType(PayloadType.DESTROY_BULLET);
+		payload.setNumber(id);
+		return sendPayload(payload);
+	}
+	
+	protected boolean syncRemoveGrenade(int id) {
+		Payload payload = new Payload();
+		payload.setPayloadType(PayloadType.DESTROY_GRENADE);
 		payload.setNumber(id);
 		return sendPayload(payload);
 	}
@@ -275,6 +290,9 @@ public class ServerThread extends Thread {
 			break;
 		case SHOOT:
 			currentRoom.getSyncBullet(this);
+			break;
+		case GRENADE:
+			currentRoom.getSyncGrenade(this);
 			break;
 		default:
 			log.log(Level.INFO, "Unhandled payload on server: " + p);

@@ -6,4 +6,5 @@ public class KeyStates {
 	public static boolean A = false;
 	public static boolean D = false;
 	public static boolean FIRE = false;
+	public static boolean GRENADE = false;
 }

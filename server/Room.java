@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 
 import client.Player;
 import core.BaseGamePanel;
+import core.Grenade;
 import core.Projectile;
 
 public class Room extends BaseGamePanel implements AutoCloseable {
@@ -42,6 +43,7 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 	private final static String READY = "ready";
 	private List<ClientPlayer> clients = new ArrayList<ClientPlayer>();
 	private List<Projectile> projectiles = new ArrayList<Projectile>();
+	private List<Grenade> grenades = new ArrayList<Grenade>();
 	private static Dimension gameAreaSize = new Dimension(1280, 720);
 
 	private long timeLeft = ROUND_TIME;
@@ -479,6 +481,14 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			client.client.sendSyncProjectile(proj);
 		}
 	}
+	
+	protected void sendSyncGrenade(Grenade proj) {
+		Iterator<ClientPlayer> iter = clients.iterator();
+		while (iter.hasNext()) {
+			ClientPlayer client = iter.next();
+			client.client.sendSyncGrenade(proj);
+		}
+	}
 
 	protected void sendRemoveProjectile(int id) {
 		Iterator<ClientPlayer> iter = clients.iterator();
@@ -486,6 +496,15 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			ClientPlayer client = iter.next();
 
 			client.client.syncRemoveProjectile(id);
+		}
+	}
+	
+	protected void sendRemoveGrenade(int id) {
+		Iterator<ClientPlayer> iter = clients.iterator();
+		while (iter.hasNext()) {
+			ClientPlayer client = iter.next();
+
+			client.client.syncRemoveGrenade(id);
 		}
 	}
 
@@ -568,6 +587,48 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 		}
 
 		
+		HandleProjectiles();
+		HandleGrenades();
+		
+		Iterator<ClientPlayer> iter = clients.iterator();
+		while (iter.hasNext()) {
+			ClientPlayer p = iter.next();
+			if (p != null && p.player.isActive()) {
+				// have the server-side player calc their potential new position
+				p.player.move();
+				int passedBounds = p.player.passedScreenBounds(gameAreaSize);
+
+				switch (passedBounds) {
+				case 1:
+					p.player.setPosition(new Point(p.player.getPosition().x, p.player.getSize().y));// North
+					break;
+
+				case 2:
+					p.player.setPosition(
+					new Point(gameAreaSize.width - p.player.getSize().x, p.player.getPosition().y));// East
+					break;
+
+				case 3:
+					p.player.setPosition(
+					new Point(p.player.getPosition().x, gameAreaSize.height - p.player.getSize().y));// South
+					break;
+
+				case 4:
+					p.player.setPosition(new Point(p.player.getSize().x, p.player.getPosition().y));// West
+					break;
+				}
+
+				if (passedBounds > 0) {
+					sendPositionSync(p.player.getId(), p.player.getPosition());
+				}
+
+				// determine if we should sync this player's position to all other players
+				checkPositionSync(p);
+			}
+		}
+	}
+
+	private void HandleProjectiles() {
 		Iterator<Projectile> pIter = projectiles.iterator();
 		while (pIter.hasNext()) {
 			Projectile p = pIter.next();
@@ -624,44 +685,75 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 			}
 		}
 		
-		Iterator<ClientPlayer> iter = clients.iterator();
-		while (iter.hasNext()) {
-			ClientPlayer p = iter.next();
-			if (p != null && p.player.isActive()) {
-				// have the server-side player calc their potential new position
-				p.player.move();
-				int passedBounds = p.player.passedScreenBounds(gameAreaSize);
-
-				switch (passedBounds) {
-				case 1:
-					p.player.setPosition(new Point(p.player.getPosition().x, p.player.getSize().y));// North
-					break;
-
-				case 2:
-					p.player.setPosition(
-					new Point(gameAreaSize.width - p.player.getSize().x, p.player.getPosition().y));// East
-					break;
-
-				case 3:
-					p.player.setPosition(
-					new Point(p.player.getPosition().x, gameAreaSize.height - p.player.getSize().y));// South
-					break;
-
-				case 4:
-					p.player.setPosition(new Point(p.player.getSize().x, p.player.getPosition().y));// West
-					break;
-				}
-
-				if (passedBounds > 0) {
-					sendPositionSync(p.player.getId(), p.player.getPosition());
-				}
-
-				// determine if we should sync this player's position to all other players
-				checkPositionSync(p);
-			}
-		}
 	}
 
+	private void HandleGrenades() {
+		Iterator<Grenade> gIter = grenades.iterator();
+		while (gIter.hasNext()) {
+			Grenade g = gIter.next();
+
+			if (g != null && g.isActive()) {
+				int projId = g.getId();
+
+				g.move();
+
+				List<Integer> targetIds = g.getCollidingPlayers(clients);
+				if (g.passedScreenBounds(gameAreaSize)) {
+					ClientPlayer cp = getClientPlayerById(projId);
+
+					cp.setHasFired(false);
+					sendRemoveGrenade(projId);
+					gIter.remove();
+				} 
+				else if(g.getMaxRadius() == g.getRadius()) {
+					ClientPlayer cp = getClientPlayerById(projId);
+
+					cp.setHasFired(false);
+					sendRemoveGrenade(projId);
+					gIter.remove();
+				}
+				else if (targetIds.size() > 0) {
+					for (int id : targetIds) {
+						ClientPlayer cp = getClientPlayerById(id);
+						cp.player.setHP(cp.player.getHP() - 1);
+						broadcastHP(cp.player.getId(), cp.player.getHP());
+						log.log(Level.INFO, cp.client.getClientName() + " was hit!");
+						if(!cp.player.HealthCheck()) {
+							broadcastDeadPlayer(cp);
+							if(cp.player.getTeam() == TEAM_A) {
+								teamBScore++;
+							}else {
+								teamAScore++;
+							}
+							
+							broadcastScores(teamAScore, teamBScore);
+							
+							sendMessage(cp.client, cp.client.getClientName() + " is out!");
+							
+							if(teamAPlayers == teamBScore || teamBPlayers == teamAScore) {
+								EndGame();
+								
+								grenades.clear();
+								
+								return;
+							}
+						}else {
+							sendMessage(cp.client, cp.client.getClientName() + " was hit!");
+						}
+					}
+					
+					ClientPlayer cp = getClientPlayerById(projId);			
+					
+					cp.setHasFired(false);
+					sendRemoveGrenade(projId);
+					if(gIter != null)
+						gIter.remove();
+				}
+			}
+		}
+		
+	}
+	
 	private void EndGame() {
 		state = GameState.END;
 		broadcastGameState();
@@ -824,6 +916,26 @@ public class Room extends BaseGamePanel implements AutoCloseable {
 				projectiles.add(newProj);
 
 				sendSyncProjectile(newProj);
+			}
+		}
+	}
+	
+	public void getSyncGrenade(ServerThread client) {
+		Iterator<ClientPlayer> iter = clients.iterator();
+		while (iter.hasNext()) {
+			ClientPlayer cp = iter.next();
+
+			if (cp.client == client && !cp.hasFired()) {
+				cp.setHasFired(true);
+				int pt = cp.player.getTeam();
+				int xdir = pt == 1 ? -1 : 1;
+
+				Grenade newProj = new Grenade(pt, cp.player.getId(), xdir,
+						new Point(cp.player.getPosition().x, cp.player.getPosition().y), gameAreaSize.width/2);
+
+				grenades.add(newProj);
+
+				sendSyncGrenade(newProj);
 			}
 		}
 	}

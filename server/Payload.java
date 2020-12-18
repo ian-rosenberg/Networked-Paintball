@@ -201,6 +201,69 @@ public class Payload implements Serializable {
 	}
 
 	private ProjectileInfo projectilePayload = new ProjectileInfo();
+	
+	public class GrenadeInfo implements Serializable {
+		private static final long serialVersionUID = 1L;
+		private int teamId = 0;
+		private int playerId = -1;
+		private int dirX = 0;
+		private int radius = -1;
+		private Point position = new Point(0, 0);
+
+		public void setTeamId(int id) {
+			teamId = id;
+		}
+
+		public int getTeamId() {
+			return teamId;
+		}
+
+		public int getDirX() {
+			return dirX;
+		}
+
+		public void setDirX(int dirX) {
+			this.dirX = dirX;
+		}
+
+		public int getPlayerId() {
+			return playerId;
+		}
+
+		public void setPlayerId(int playerId) {
+			this.playerId = playerId;
+		}
+
+		public Point getPosition() {
+			return position;
+		}
+
+		public void setPosition(Point position) {
+			this.position = position;
+		}
+
+		public int getRadius() {
+			return radius;
+		}
+
+		public void setRadius(int radius) {
+			this.radius = radius;
+		}
+	}
+
+	public GrenadeInfo getGrenadeInfo() {
+		return grenadePayload;
+	}
+
+	public void setGrenadeInfo(int team, int ownerId, int dX, Point position, int radius) {
+		grenadePayload.setTeamId(team);
+		grenadePayload.setDirX(dX);
+		grenadePayload.setPlayerId(ownerId);
+		grenadePayload.setPosition(position);
+		grenadePayload.setRadius(radius);
+	}
+
+	private GrenadeInfo grenadePayload = new GrenadeInfo();
 
 	/**
 	 * baeldung.com/java-serial-version-uid
