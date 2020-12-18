@@ -22,6 +22,7 @@ import javax.swing.InputMap;
 import javax.swing.KeyStroke;
 
 import core.BaseGamePanel;
+import core.Grenade;
 import core.Projectile;
 import server.GameState;
 
@@ -33,6 +34,7 @@ public class GamePanel extends BaseGamePanel implements Event {
 	private static final long serialVersionUID = -1121202275148798015L;
 	List<Player> players;
 	List<Projectile> localBullets;
+	List<Grenade> localGrenades;
 	Player myPlayer;
 	String playerUsername;// caching it so we don't lose it when room is wiped
 	private boolean canFire = true;
@@ -130,6 +132,7 @@ public class GamePanel extends BaseGamePanel implements Event {
 	public void awake() {
 		players = new ArrayList<Player>();
 		localBullets = new ArrayList<Projectile>();
+		localGrenades = new ArrayList<Grenade>();
 		GamePanel gp = this;
 		// fix the loss of focus when typing in chat
 		addMouseListener(new MouseAdapter() {
@@ -180,6 +183,10 @@ public class GamePanel extends BaseGamePanel implements Event {
 				SocketClient.INSTANCE.sendShootBullet();
 				canFire = false;
 			}
+			if (KeyStates.GRENADE && canFire) {
+				SocketClient.INSTANCE.sendThrowGrenade();
+				canFire = false;
+			}
 			boolean changed = myPlayer.setDirection(x, y);
 			if (changed) {
 				// only send data if direction changed, otherwise we're creating unnecessary
@@ -216,6 +223,14 @@ public class GamePanel extends BaseGamePanel implements Event {
 				p.move();
 			}
 		}
+		
+		Iterator<Grenade> gIter = localGrenades.iterator();
+		while (gIter.hasNext()) {
+			Grenade g = gIter.next();
+			if (g != null) {
+				g.move();
+			}
+		}
 	}
 
 	@Override
@@ -233,6 +248,7 @@ public class GamePanel extends BaseGamePanel implements Event {
 			((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			drawPlayers(g);
 			drawProjectiles(g);
+			drawGrenades(g);
 			drawText(g);
 		} catch (Exception e) {
 
@@ -261,6 +277,16 @@ public class GamePanel extends BaseGamePanel implements Event {
 		Iterator<Projectile> iter = localBullets.iterator();
 		while (iter.hasNext()) {
 			Projectile p = iter.next();
+			if (p != null) {
+				p.draw(g);
+			}
+		}
+	}
+	
+	private synchronized void drawGrenades(Graphics g) {
+		Iterator<Grenade> iter = localGrenades.iterator();
+		while (iter.hasNext()) {
+			Grenade p = iter.next();
 			if (p != null) {
 				p.draw(g);
 			}
@@ -312,6 +338,8 @@ public class GamePanel extends BaseGamePanel implements Event {
 		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_D, 0, true), "right_released");
 		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0, false), "space_pressed");
 		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0, true), "space_released");
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_G, 0, false), "g_pressed");
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_G, 0, true), "g_released");
 
 		ActionMap am = this.getRootPane().getActionMap();
 
@@ -329,6 +357,9 @@ public class GamePanel extends BaseGamePanel implements Event {
 
 		am.put("space_pressed", new MoveAction(KeyEvent.VK_SPACE, true));
 		am.put("space_released", new MoveAction(KeyEvent.VK_SPACE, false));
+		
+		am.put("g_pressed", new MoveAction(KeyEvent.VK_G, true));
+		am.put("g_released", new MoveAction(KeyEvent.VK_G, false));
 	}
 
 	@Override
@@ -536,5 +567,45 @@ public class GamePanel extends BaseGamePanel implements Event {
 		}
 		
 		repaint();
+	}
+
+	@Override
+	public void onSetGrenadePosition(int teamId, int playerId, int dirX, Point position, int radius) {
+		boolean newBullet = true;
+		Iterator<Grenade> pIter = localGrenades.iterator();
+		while (pIter.hasNext()) {
+			Grenade proj = pIter.next();
+			if (proj.getId() == playerId) {
+				proj.setDirX(dirX);
+				proj.setTeam(teamId);
+				proj.setPosition(position);
+				proj.setRadius(radius);
+				newBullet = false;
+				return;
+			}
+		}
+
+		if (newBullet) {
+			Grenade newGrenade = new Grenade(teamId, playerId, dirX, position, radius);
+			newGrenade.setMaxTravel(boundary.width/2);
+
+			localGrenades.add(newGrenade);
+		}
+		
+	}
+
+	@Override
+	public void onRemoveGrenade(int id) {
+		Iterator<Grenade> gIter = localGrenades.iterator();
+		while (gIter.hasNext()) {
+			Projectile g = gIter.next();
+			if (g.getId() == id) {
+				if (g.getId() == myPlayer.getId()) {
+					canFire = true;
+				}
+				gIter.remove();
+				return;
+			}
+		}
 	}
 }

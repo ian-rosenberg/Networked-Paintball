@@ -505,4 +505,16 @@ public class ClientUI extends JFrame implements Event {
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public void onSetGrenadePosition(int teamId, int playerId, int dirX, Point position, int radius) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onRemoveGrenade(int id) {
+		// TODO Auto-generated method stub
+		
+	}
 }

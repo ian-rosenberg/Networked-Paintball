@@ -33,6 +33,9 @@ public class MoveAction extends AbstractAction {
 		case KeyEvent.VK_SPACE:
 			KeyStates.FIRE = pressed;
 			break;
+		case KeyEvent.VK_G:
+			KeyStates.GRENADE = pressed;
+			break;
 		}
 	}
 }

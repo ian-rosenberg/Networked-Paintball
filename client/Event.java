@@ -44,4 +44,8 @@ public interface Event {
 	void onDisablePlayer(int id, String clientName);
 
 	void onSetScores(int scoreA, int scoreB);
+
+	void onSetGrenadePosition(int teamId, int playerId, int dirX, Point position, int radius);
+
+	void onRemoveGrenade(int id);
 }

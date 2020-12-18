@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 
 import server.GameState;
 import server.Payload;
+import server.Payload.GrenadeInfo;
 import server.Payload.IdNamePair;
 import server.Payload.ProjectileInfo;
 import server.Payload.TeamScore;
@@ -226,6 +227,16 @@ public enum SocketClient {
 			}
 		}
 	}
+	
+	private void setGrenadePosition(GrenadeInfo pInfo) {
+		Iterator<Event> iter = events.iterator();
+		while (iter.hasNext()) {
+			Event e = iter.next();
+			if (e != null) {
+				e.onSetGrenadePosition(pInfo.getTeamId(), pInfo.getPlayerId(), pInfo.getDirX(), pInfo.getPosition(), pInfo.getRadius());
+			}
+		}
+	}
 
 	private void removeBullet(int id) {
 		Iterator<Event> iter = events.iterator();
@@ -233,6 +244,16 @@ public enum SocketClient {
 			Event e = iter.next();
 			if (e != null) {
 				e.onRemoveBullet(id);
+			}
+		}
+	}
+	
+	private void removeGrenade(int id) {
+		Iterator<Event> iter = events.iterator();
+		while (iter.hasNext()) {
+			Event e = iter.next();
+			if (e != null) {
+				e.onRemoveGrenade(id);
 			}
 		}
 	}
@@ -318,8 +339,14 @@ public enum SocketClient {
 		case SYNC_BULLET:
 			setBulletPosition(p.getProjectileInfo());
 			break;
+		case SYNC_GRENADE:
+			setGrenadePosition(p.getGrenadeInfo());
+			break;
 		case DESTROY_BULLET:
 			removeBullet(p.getNumber());
+			break;
+		case DESTROY_GRENADE:
+			removeGrenade(p.getNumber());
 			break;
 		case SET_HP:
 			setHP(p.getPoint());
@@ -411,6 +438,12 @@ public enum SocketClient {
 		sendPayload(p);
 	}
 
+	void sendThrowGrenade() {
+		Payload p = new Payload();
+		p.setPayloadType(PayloadType.GRENADE);
+		sendPayload(p);
+	}
+	
 	/**
 	 * Sends desired to change direction to server
 	 * 
